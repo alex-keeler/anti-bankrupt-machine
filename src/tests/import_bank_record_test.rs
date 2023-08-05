@@ -1,0 +1,309 @@
+use std::collections::HashMap;
+use std::error::Error;
+use chrono::NaiveDate;
+use crate::data::bank_record_key::BankRecordKey;
+use crate::data::bank_record_report::BankRecordReport;
+use crate::models::bank_transactions::BankTransaction;
+use crate::services::bank_transaction_service;
+use crate::util::{bank_record_util, compare_util};
+
+#[test]
+fn test_build_bank_record_transaction_map_matches_expected() -> Result<(), Box<dyn Error>> {
+
+    let transactions = Vec::from([
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal CONSUMERS ENERGY DIRECT DEBITING - ENERGYBILL")),
+            user_description: None, comment: None, amount: -1360, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 15).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal SQ *TRAILSIDE D 60000 Campground   Washington     MIUS")),
+            user_description: None, comment: None, amount: -837, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: Some(3), date: NaiveDate::from_ymd_opt(2023, 06, 17).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal SQ *FILLMORE CO 20 Witherell StreetDetroit        MIUS")),
+            user_description: None, comment: None, amount: -2200, bank_account_id: 1, category_id: Some(1), saving_goal_id: None, },
+
+        BankTransaction { id: Some(4), date: NaiveDate::from_ymd_opt(2023, 06, 18).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal FILLMORE DETROI 2115 WOODWARD AVE  DETROIT        MIUS")),
+            user_description: None, comment: None, amount: -2160, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 18).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal FILLMORE DETROI 2115 WOODWARD AVE  DETROIT        MIUS")),
+            user_description: None, comment: None, amount: -1080, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: Some(5), date: NaiveDate::from_ymd_opt(2023, 05, 30).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal  MODERN LEASING - MIMALVERN        PAUS")),
+            user_description: Some(String::from("Vending machine")), comment: None, amount: -310, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 05, 30).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal  MODERN LEASING - MIMALVERN        PAUS")),
+            user_description: None, comment: None, amount: -310, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: Some(7), date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: Some(8), date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: Some(String::from("Food")), comment: Some(String::from("Paid to Josh Keeler")), amount: -2550, bank_account_id: 1, category_id: Some(2), saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 03).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal  SHINTHAI           ROYAL OAK      MIUS")),
+            user_description: None, comment: None, amount: -1301, bank_account_id: 2, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: Some(9), date: NaiveDate::from_ymd_opt(2023, 06, 03).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal  SHINTHAI           ROYAL OAK      MIUS")),
+            user_description: None, comment: None, amount: -1301, bank_account_id: 3, category_id: None, saving_goal_id: None, },
+    ]);
+
+    let transaction_map = bank_record_util::build_bank_record_transaction_map(transactions);
+
+    let expected_transaction_map = HashMap::from([
+        (BankRecordKey { date: NaiveDate::from_ymd_opt(2023, 06, 15).unwrap(),
+            bank_description: String::from("External Withdrawal CONSUMERS ENERGY DIRECT DEBITING - ENERGYBILL"),
+            amount: -1360, bank_account_id: 1, },
+         Vec::from([
+             BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 15).unwrap(),
+                 bank_description: Some(String::from("External Withdrawal CONSUMERS ENERGY DIRECT DEBITING - ENERGYBILL")),
+                 user_description: None, comment: None, amount: -1360, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+         ])
+        ),
+
+        (BankRecordKey { date: NaiveDate::from_ymd_opt(2023, 06, 15).unwrap(),
+            bank_description: String::from("Point Of Sale Withdrawal SQ *TRAILSIDE D 60000 Campground   Washington     MIUS"),
+            amount: -837, bank_account_id: 1, },
+         Vec::from([
+             BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 15).unwrap(),
+                 bank_description: Some(String::from("Point Of Sale Withdrawal SQ *TRAILSIDE D 60000 Campground   Washington     MIUS")),
+                 user_description: None, comment: None, amount: -837, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+         ])
+        ),
+
+        (BankRecordKey { date: NaiveDate::from_ymd_opt(2023, 06, 17).unwrap(),
+            bank_description: String::from("Point Of Sale Withdrawal SQ *FILLMORE CO 20 Witherell StreetDetroit        MIUS"),
+            amount: -2200, bank_account_id: 1, },
+         Vec::from([
+             BankTransaction { id: Some(3), date: NaiveDate::from_ymd_opt(2023, 06, 17).unwrap(),
+                 bank_description: Some(String::from("Point Of Sale Withdrawal SQ *FILLMORE CO 20 Witherell StreetDetroit        MIUS")),
+                 user_description: None, comment: None, amount: -2200, bank_account_id: 1, category_id: Some(1), saving_goal_id: None, },
+         ])
+        ),
+
+        (BankRecordKey { date: NaiveDate::from_ymd_opt(2023, 06, 18).unwrap(),
+            bank_description: String::from("Point Of Sale Withdrawal FILLMORE DETROI 2115 WOODWARD AVE  DETROIT        MIUS"),
+            amount: -2160, bank_account_id: 1, },
+         Vec::from([
+             BankTransaction { id: Some(4), date: NaiveDate::from_ymd_opt(2023, 06, 18).unwrap(),
+                 bank_description: Some(String::from("Point Of Sale Withdrawal FILLMORE DETROI 2115 WOODWARD AVE  DETROIT        MIUS")),
+                 user_description: None, comment: None, amount: -2160, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+         ])
+        ),
+
+        (BankRecordKey { date: NaiveDate::from_ymd_opt(2023, 06, 18).unwrap(),
+            bank_description: String::from("Point Of Sale Withdrawal FILLMORE DETROI 2115 WOODWARD AVE  DETROIT        MIUS"),
+            amount: -1080, bank_account_id: 1, },
+         Vec::from([
+             BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 18).unwrap(),
+                 bank_description: Some(String::from("Point Of Sale Withdrawal FILLMORE DETROI 2115 WOODWARD AVE  DETROIT        MIUS")),
+                 user_description: None, comment: None, amount: -1080, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+         ])
+        ),
+        (BankRecordKey { date: NaiveDate::from_ymd_opt(2023, 05, 30).unwrap(),
+            bank_description: String::from("Point Of Sale Withdrawal  MODERN LEASING - MIMALVERN        PAUS"),
+            amount: -310, bank_account_id: 1, },
+         Vec::from([
+             BankTransaction { id: Some(5), date: NaiveDate::from_ymd_opt(2023, 05, 30).unwrap(),
+                 bank_description: Some(String::from("Point Of Sale Withdrawal  MODERN LEASING - MIMALVERN        PAUS")),
+                 user_description: Some(String::from("Vending machine")), comment: None, amount: -310, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+             BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 05, 30).unwrap(),
+                 bank_description: Some(String::from("Point Of Sale Withdrawal  MODERN LEASING - MIMALVERN        PAUS")),
+                 user_description: None, comment: None, amount: -310, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+         ])
+        ),
+        (BankRecordKey { date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: String::from("External Withdrawal VENMO  - PAYMENT"),
+            amount: -1000, bank_account_id: 1, },
+         Vec::from([
+             BankTransaction { id: Some(7), date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+                 bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+                 user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+             BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+                 bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+                 user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+             BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+                 bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+                 user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+         ])
+        ),
+        (BankRecordKey { date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: String::from("External Withdrawal VENMO  - PAYMENT"),
+            amount: -2550, bank_account_id: 1, },
+         Vec::from([
+             BankTransaction { id: Some(8), date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+                 bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+                 user_description: Some(String::from("Food")), comment: Some(String::from("Paid to Josh Keeler")), amount: -2550, bank_account_id: 1, category_id: Some(2), saving_goal_id: None, },
+         ])
+        ),
+        (BankRecordKey { date: NaiveDate::from_ymd_opt(2023, 06, 03).unwrap(),
+            bank_description: String::from("Point Of Sale Withdrawal  SHINTHAI           ROYAL OAK      MIUS"),
+            amount: -1301, bank_account_id: 2, },
+         Vec::from([
+             BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 03).unwrap(),
+                 bank_description: Some(String::from("Point Of Sale Withdrawal  SHINTHAI           ROYAL OAK      MIUS")),
+                 user_description: None, comment: None, amount: -1301, bank_account_id: 2, category_id: None, saving_goal_id: None, },
+         ])
+        ),
+        (BankRecordKey { date: NaiveDate::from_ymd_opt(2023, 06, 03).unwrap(),
+            bank_description: String::from("Point Of Sale Withdrawal  SHINTHAI           ROYAL OAK      MIUS"),
+            amount: -1301, bank_account_id: 3, },
+         Vec::from([
+             BankTransaction { id: Some(9), date: NaiveDate::from_ymd_opt(2023, 06, 03).unwrap(),
+                 bank_description: Some(String::from("Point Of Sale Withdrawal  SHINTHAI           ROYAL OAK      MIUS")),
+                 user_description: None, comment: None, amount: -1301, bank_account_id: 3, category_id: None, saving_goal_id: None, },
+         ])
+        ),
+    ]);
+
+    assert_eq!(transaction_map, expected_transaction_map);
+
+    Ok(())
+}
+
+#[test]
+fn test_find_bank_transactions_to_add_matches_expected() -> Result<(), Box<dyn Error>> {
+
+    let new_transactions = Vec::from([
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal CONSUMERS ENERGY DIRECT DEBITING - ENERGYBILL")),
+            user_description: None, comment: None, amount: -1360, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 15).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal SQ *TRAILSIDE D 60000 Campground   Washington     MIUS")),
+            user_description: None, comment: None, amount: -837, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 17).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal SQ *FILLMORE CO 20 Witherell StreetDetroit        MIUS")),
+            user_description: None, comment: None, amount: -2200, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 18).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal FILLMORE DETROI 2115 WOODWARD AVE  DETROIT        MIUS")),
+            user_description: None, comment: None, amount: -2160, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 18).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal FILLMORE DETROI 2115 WOODWARD AVE  DETROIT        MIUS")),
+            user_description: None, comment: None, amount: -1080, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 05, 30).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal  MODERN LEASING - MIMALVERN        PAUS")),
+            user_description: None, comment: None, amount: -310, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 05, 30).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal  MODERN LEASING - MIMALVERN        PAUS")),
+            user_description: None, comment: None, amount: -310, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 03).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal  SHINTHAI           ROYAL OAK      MIUS")),
+            user_description: None, comment: None, amount: -1301, bank_account_id: 2, category_id: None, saving_goal_id: None, },
+    ]);
+
+    let existing_transactions = Vec::from([
+        BankTransaction { id: Some(1), date: NaiveDate::from_ymd_opt(2023, 06, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal CONSUMERS ENERGY DIRECT DEBITING - ENERGYBILL")),
+            user_description: None, comment: None, amount: -1360, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: Some(2), date: NaiveDate::from_ymd_opt(2023, 06, 15).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal SQ *TRAILSIDE D 60000 Campground   Washington     MIUS")),
+            user_description: Some(String::from("Ice cream")), comment: None, amount: -837, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: Some(3), date: NaiveDate::from_ymd_opt(2023, 06, 17).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal SQ *FILLMORE CO 20 Witherell StreetDetroit        MIUS")),
+            user_description: None, comment: None, amount: -2200, bank_account_id: 1, category_id: Some(1), saving_goal_id: None, },
+
+        BankTransaction { id: Some(4), date: NaiveDate::from_ymd_opt(2023, 06, 18).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal FILLMORE DETROI 2115 WOODWARD AVE  DETROIT        MIUS")),
+            user_description: None, comment: None, amount: -2160, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: Some(5), date: NaiveDate::from_ymd_opt(2023, 05, 30).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal  MODERN LEASING - MIMALVERN        PAUS")),
+            user_description: Some(String::from("Vending machine")), comment: None, amount: -310, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: Some(6), date: NaiveDate::from_ymd_opt(2023, 05, 30).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal  MODERN LEASING - MIMALVERN        PAUS")),
+            user_description: Some(String::from("Second vending machine purchase")), comment: None, amount: -310, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: Some(7), date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: Some(8), date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: Some(String::from("Food")), comment: Some(String::from("Paid to Josh Keeler")), amount: -2550, bank_account_id: 1, category_id: Some(2), saving_goal_id: None, },
+
+        BankTransaction { id: Some(9), date: NaiveDate::from_ymd_opt(2023, 06, 03).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal  SHINTHAI           ROYAL OAK      MIUS")),
+            user_description: None, comment: None, amount: -1301, bank_account_id: 3, category_id: None, saving_goal_id: None, },
+
+    ]);
+
+    let report = BankRecordReport {
+        transactions: new_transactions,
+        begin_date: None,
+        end_date: None,
+    };
+
+    let mut transactions_to_add = bank_transaction_service::find_bank_transactions_to_add(report, existing_transactions);
+
+    let expected_transactions = Vec::from([
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 18).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal FILLMORE DETROI 2115 WOODWARD AVE  DETROIT        MIUS")),
+            user_description: None, comment: None, amount: -1080, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 04, 15).unwrap(),
+            bank_description: Some(String::from("External Withdrawal VENMO  - PAYMENT")),
+            user_description: None, comment: None, amount: -1000, bank_account_id: 1, category_id: None, saving_goal_id: None, },
+
+        BankTransaction { id: None, date: NaiveDate::from_ymd_opt(2023, 06, 03).unwrap(),
+            bank_description: Some(String::from("Point Of Sale Withdrawal  SHINTHAI           ROYAL OAK      MIUS")),
+            user_description: None, comment: None, amount: -1301, bank_account_id: 2, category_id: None, saving_goal_id: None, },
+    ]);
+
+    assert!(compare_util::vecs_are_equal_unordered(&transactions_to_add, &expected_transactions),
+        "Transactions to add does not match expected transaction!\n\nExpected: {:?}\n\nGot: {:?}\n\n", expected_transactions, transactions_to_add);
+
+    Ok(())
+}

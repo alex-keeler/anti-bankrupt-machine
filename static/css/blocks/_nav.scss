@@ -1,0 +1,40 @@
+.nav {
+    background-color: #eee;
+    border-right: 1px solid #ccc;
+    color: #444;
+    position: absolute;
+    left: 0;
+    top: 40px;
+    height: calc(100% - 40px);
+    width: 250px;
+
+    &__title {
+        font-weight: 700;
+    }
+
+    &__list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    &__link {
+        padding: 15px;
+        cursor: pointer;
+        display: inline-block;
+        width: 100%;
+        color: inherit;
+        text-decoration: inherit;
+
+        &:hover {
+            background: #444;
+            color: #eee;
+        }
+
+        &--logout {
+            position: absolute;
+            bottom: 0px;
+            left: 0px;
+        }
+    }
+}
