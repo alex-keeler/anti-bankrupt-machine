@@ -1,0 +1,53 @@
+.form {
+    width: 80%;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 50px;
+    margin: 30px auto;
+
+    &--xsmall {
+        max-width: 300px;
+    }
+
+    &--small {
+        max-width: 500px;
+    }
+
+    &--medium {
+        max-width: 700px;
+    }
+
+    &--large {
+        max-width: 900px;
+    }
+
+    &--xlarge {
+        max-width: 1100px;
+    }
+
+    &__header {
+        margin-bottom: 20px;
+        font-weight: 700;
+        font-size: 16pt;
+        text-align: center;
+    }
+
+    &__entry {
+        padding: 10px 0px;
+
+        &--submit {
+            padding: 20px 0px 0px 0px;
+            text-align: center;
+        }
+    }
+
+    &__label {
+        display: block;
+        margin-bottom: 5px
+    }
+
+    &__input {
+        width: 100%;
+    }
+}

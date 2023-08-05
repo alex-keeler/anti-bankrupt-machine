@@ -1,0 +1,39 @@
+.list {
+    list-style: none;
+    padding: 0;
+
+    &__item {
+        border-bottom: 1px solid gray;
+        padding: 15px 20px;
+
+        &:first-child {
+            border-top: 1px solid gray;
+        }
+    }
+}
+
+.menu {
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    position: absolute;
+    background-color: #fff;
+    color: #333;
+    list-style: none;
+    padding: 0;
+    cursor: pointer;
+    display: none;
+    margin: 0;
+
+    &--right {
+        left: 200px;
+    }
+
+    &__item {
+        padding: 5px 10px;
+
+        &:hover {
+            background-color: #444;
+            color: #eee;
+        }
+    }
+}

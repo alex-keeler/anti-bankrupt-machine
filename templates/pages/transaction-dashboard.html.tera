@@ -1,0 +1,62 @@
+{% extends "layout/general-layout" %}
+
+{% block styles %}
+    {{ super() }}
+    <link href="static/css/compiled/transaction-dashboard.css" type="text/css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <h1>Transaction Dashboard</h1>
+    <ul id="category-select" class="menu">
+        {% for category_group in category_group_list %}
+            {% if category_group.categories | length == 1 and not category_group.categories[0].title %}
+                <li class="menu__item" data-id="{{ category_group.categories[0].id }}">{{ category_group.title }}</li>
+            {% else %}
+                <li class="menu__item">
+                    <i class="fa-solid fa-caret-left"></i>
+                    {{ category_group.title }}
+                    <ul class="menu">
+                        {% for category in category_group.categories %}
+                            <li class="menu__item" data-id="{{ category.id }}">{{ category.title }} </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+    <ul class="transaction-list list">
+        {% for transaction in transaction_details_list %}
+            <li class="transaction-list__entry list__item" data-id="{{ transaction.id }}">
+                <div class="transaction-list__date">{{ transaction.date }}</div>
+                {% if transaction.amount < 0 %}
+                    <div class="transaction-list__amount transaction-list__amount--negative">{{ format_amount(amount=transaction.amount) }}</div>
+                {% else %}
+                    <div class="transaction-list__amount transaction-list__amount--positive">{{ format_amount(amount=transaction.amount) }}</div>
+                {% endif %}
+                <div style="flex: 1;">
+                    <div class="transaction-list__user-description">{{ transaction.user_description }}</div>
+                    <div class="transaction-list__bank-description">{{ transaction.bank_description }}</div>
+                    <div class="transaction-list__comment">{{ transaction.comment }}</div>
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                    {% if transaction.category_title %}
+                        <div class="transaction-list__category">
+                            <span>{{ transaction.category_title }}</span>
+                            <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
+                        </div>
+                    {% else %}
+                        <div class="transaction-list__category transaction-list__category--uncategorized">
+                            <span>Uncategorized</span>
+                        </div>
+                    {% endif %}
+                    <div class="transaction-list__bank-account">{{ transaction.bank_account_title }}</div>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript" src="static/javascript/pages/transaction-dashboard.js"></script>
+{% endblock %}

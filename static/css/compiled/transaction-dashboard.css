@@ -1,0 +1,58 @@
+.transaction-list__entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.transaction-list__date {
+  flex: 0 0;
+}
+.transaction-list__user-description {
+  font-weight: 700;
+}
+.transaction-list__bank-description {
+  font-size: 0.9em;
+  color: #333;
+}
+.transaction-list__comment {
+  font-size: 0.8em;
+  color: #777;
+}
+.transaction-list__bank-account {
+  font-size: 0.8em;
+  color: #555;
+  text-align: right;
+}
+.transaction-list__category {
+  font-size: 0.8em;
+  background-color: #2189ff;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  height: 2em;
+  margin-left: auto;
+  margin-bottom: 5px;
+  font-weight: 700;
+  text-align: center;
+  display: flex;
+  align-items: center;
+}
+.transaction-list__category--uncategorized {
+  background-color: #fc6238;
+  cursor: pointer;
+}
+.transaction-list__category-remove {
+  float: right;
+  margin-left: 5px;
+  cursor: pointer;
+}
+.transaction-list__amount {
+  flex: 0 0 100px;
+  margin: 0 20px 0 10px;
+  text-align: right;
+}
+.transaction-list__amount--positive {
+  color: green;
+}
+.transaction-list__amount--negative {
+  color: red;
+}

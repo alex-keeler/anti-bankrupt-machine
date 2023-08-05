@@ -1,0 +1,2 @@
+[default.databases.budgetmanager]
+url = "mysql://budgetuser:keepmeoutofbankruptcy@localhost:3306/budgetmanager?useSSL=false"

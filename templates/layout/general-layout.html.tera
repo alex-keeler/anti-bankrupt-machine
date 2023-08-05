@@ -1,0 +1,33 @@
+<html lang="en">
+    <head>
+        <base href="/"/>
+        <title>{% block title %}Money Management System - {% endblock title %}</title>
+        {% block styles %}
+            <link href="static/css/compiled/base.css" type="text/css" rel="stylesheet">
+            <link href="static/css/compiled/blocks.css" type="text/css" rel="stylesheet">
+            <link href="static/css/compiled/common-modules.css" type="text/css" rel="stylesheet">
+        {% endblock %}
+        {% block scripts %}
+            <script type="text/javascript" src="static/javascript/lib/jquery-3.5.1.min.js"></script>
+            <script type="text/javascript" src="static/javascript/lib/font-awesome.min.js"></script>
+        {% endblock %}
+    </head>
+    <body>
+        {% include "blocks/header" %}
+        {% include "blocks/nav" %}
+
+        <div id="content-container" class="content__container">
+            {% if flash %}
+                {% if flash.kind == 'error' %}
+                    <div class="alert alert--warn">{{ flash.message }}</div>
+                {% else %}
+                    <div class="alert alert--info">{{ flash.message }}</div>
+                {% endif %}
+            {% endif %}
+            <div id="content" class="content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+        {% include "blocks/footer" %}
+    </body>
+</html>

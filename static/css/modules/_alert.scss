@@ -1,0 +1,16 @@
+.alert {
+    display: inline-block;
+    width: 100%;
+    color: white;
+    padding: 15px 30px;
+    font-weight: 700;
+    text-align: center;
+
+    &--info {
+        background-color: #0059a3;
+    }
+
+    &--warn {
+        background-color: #fa5339;
+    }
+}
