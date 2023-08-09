@@ -4,30 +4,16 @@ $(document).ready(function() {
         setupCategoryElement($(this));
     });
 
-    setupMenu();
+    setupCategoryMenu();
+
+    $('.transaction-list__user-description').each(function() {
+        setupUserDescriptionElement($(this));
+    });
+
+    $('.transaction-list__comment').each(function() {
+        setupCommentElement($(this));
+    });
 });
-
-function setupMenu() {
-    $('#category-select').on('mouseleave', function() {
-        $('#category-select').hide();
-        $('#category-select').find('.menu').hide();
-    });
-
-    $('.menu__item').on('mouseenter', function() {
-        $('#category-select').find('.menu').not($(this).parent()).hide();
-        let submenu = $(this).find('.menu');
-        if (submenu.length != 0) {
-            submenu.css('top', $(this).position().top + "px");
-            submenu.css('right', $(this).outerWidth() + "px");
-            submenu.show();
-        }
-    });
-
-    $('#category-select').on('mouseleave', function() {
-        $('#category-select').hide();
-        $('#category-select').find('.menu').hide();
-    });
-}
 
 function setupCategoryElement(categoryElement) {
     if ($(categoryElement).hasClass('transaction-list__category--uncategorized')) {
@@ -53,7 +39,144 @@ function setupCategoryElement(categoryElement) {
             });
         });
     }
+}
 
+function setupUserDescriptionElement(userDescriptionElement) {
+    let text = $(userDescriptionElement).find('.transaction-list__user-description--text');
+    let link = $(userDescriptionElement).find('.transaction-list__user-description--link');
+    let input = $(userDescriptionElement).find('.transaction-list__user-description--input');
+
+    $(input).on('keypress', function(e) {
+        if (e.keyCode === 13) {
+            updateUserDescription(userDescriptionElement);
+        }
+    });
+
+    $(input).on('focusout', function() {
+        updateUserDescription(userDescriptionElement);
+    });
+
+    $(text).on('click', function() {
+        input.val(text.text());
+        showUserDescriptionElement(userDescriptionElement, true);
+    });
+
+    $(link).on('click', function() {
+        input.val("");
+        showUserDescriptionElement(userDescriptionElement, true);
+    });
+
+    showUserDescriptionElement(userDescriptionElement, false);
+}
+
+function updateUserDescription(userDescriptionElement) {
+    let transactionId = $(userDescriptionElement).parents('.transaction-list__entry').data('id');
+    let userDescription = $(userDescriptionElement).find('.transaction-list__user-description--input').val();
+    $.post('/secure/api/set-user-description/' + transactionId, userDescription, function(transactionDetails) {
+        $(userDescriptionElement).find('.transaction-list__user-description--text').text(userDescription);
+        showUserDescriptionElement(userDescriptionElement, false);
+    });
+}
+
+function showUserDescriptionElement(userDescriptionElement, editing) {
+    let text = $(userDescriptionElement).find('.transaction-list__user-description--text');
+    let link = $(userDescriptionElement).find('.transaction-list__user-description--link');
+    let input = $(userDescriptionElement).find('.transaction-list__user-description--input');
+
+    if (editing) {
+        input.show();
+        text.hide();
+        link.hide();
+        input.focus();
+    } else if (text.text()) {
+        text.show();
+        link.hide();
+        input.hide();
+    } else {
+        link.show();
+        text.hide();
+        input.hide();
+    }
+}
+
+function setupCommentElement(commentElement) {
+    let text = $(commentElement).find('.transaction-list__comment--text');
+    let link = $(commentElement).find('.transaction-list__comment--link');
+    let input = $(commentElement).find('.transaction-list__comment--input');
+
+    $(input).on('keypress', function(e) {
+        if (e.keyCode === 13) {
+            updateComment(commentElement);
+        }
+    });
+
+    $(input).on('focusout', function() {
+        updateComment(commentElement);
+    });
+
+    $(text).on('click', function() {
+        input.val(text.text());
+        showCommentElement(commentElement, true);
+    });
+
+    $(link).on('click', function() {
+        input.val("");
+        showCommentElement(commentElement, true);
+    });
+
+    showCommentElement(commentElement, false);
+}
+
+function updateComment(commentElement) {
+    let transactionId = $(commentElement).parents('.transaction-list__entry').data('id');
+    let comment = $(commentElement).find('.transaction-list__comment--input').val();
+    $.post('/secure/api/set-comment/' + transactionId, comment, function(transactionDetails) {
+        $(commentElement).find('.transaction-list__comment--text').text(comment);
+        showCommentElement(commentElement, false);
+    });
+}
+
+function showCommentElement(commentElement, editing) {
+    let text = $(commentElement).find('.transaction-list__comment--text');
+    let link = $(commentElement).find('.transaction-list__comment--link');
+    let input = $(commentElement).find('.transaction-list__comment--input');
+
+    if (editing) {
+        input.show();
+        text.hide();
+        link.hide();
+        input.focus();
+    } else if (text.text()) {
+        text.show();
+        link.hide();
+        input.hide();
+    } else {
+        link.show();
+        text.hide();
+        input.hide();
+    }
+}
+
+function setupCategoryMenu() {
+    $('#category-select').on('mouseleave', function() {
+        $('#category-select').hide();
+        $('#category-select').find('.menu').hide();
+    });
+
+    $('.menu__item').on('mouseenter', function() {
+        $('#category-select').find('.menu').not($(this).parent()).hide();
+        let submenu = $(this).find('.menu');
+        if (submenu.length != 0) {
+            submenu.css('top', $(this).position().top + "px");
+            submenu.css('right', $(this).outerWidth() + "px");
+            submenu.show();
+        }
+    });
+
+    $('#category-select').on('mouseleave', function() {
+        $('#category-select').hide();
+        $('#category-select').find('.menu').hide();
+    });
 }
 
 function openCategorySelectMenu(categoryElement) {
