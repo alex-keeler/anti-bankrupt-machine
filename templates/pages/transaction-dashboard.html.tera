@@ -7,23 +7,6 @@
 
 {% block content %}
     <h1>Transaction Dashboard</h1>
-    <ul id="category-select" class="menu">
-        {% for category_group in category_group_list %}
-            {% if category_group.categories | length == 1 and not category_group.categories[0].title %}
-                <li class="menu__item" data-id="{{ category_group.categories[0].id }}">{{ category_group.title }}</li>
-            {% else %}
-                <li class="menu__item">
-                    <i class="fa-solid fa-caret-left"></i>
-                    {{ category_group.title }}
-                    <ul class="menu">
-                        {% for category in category_group.categories %}
-                            <li class="menu__item" data-id="{{ category.id }}">{{ category.title }} </li>
-                        {% endfor %}
-                    </ul>
-                </li>
-            {% endif %}
-        {% endfor %}
-    </ul>
     <ul class="transaction-list list">
         {% for transaction in transaction_details_list %}
             <li class="transaction-list__entry list__item" data-id="{{ transaction.id }}">
@@ -34,9 +17,17 @@
                     <div class="transaction-list__amount transaction-list__amount--positive">{{ format_amount(amount=transaction.amount) }}</div>
                 {% endif %}
                 <div style="flex: 1;">
-                    <div class="transaction-list__user-description">{{ transaction.user_description }}</div>
+                    <div class="transaction-list__user-description">
+                        <div class="transaction-list__user-description--text" style="display: none;">{{ transaction.user_description }}</div>
+                        <div class="transaction-list__user-description--link" style="display: none;">Add a title</div>
+                        <input class="transaction-list__user-description--input" type="text" placeholder="Title" style="display: none;">
+                    </div>
                     <div class="transaction-list__bank-description">{{ transaction.bank_description }}</div>
-                    <div class="transaction-list__comment">{{ transaction.comment }}</div>
+                    <div class="transaction-list__comment">
+                        <div class="transaction-list__comment--text" style="display: none;">{{ transaction.comment }}</div>
+                        <div class="transaction-list__comment--link" style="display: none;">Add a comment</div>
+                        <input class="transaction-list__comment--input" type="text" placeholder="Comment" style="display: none;">
+                    </div>
                 </div>
                 <div style="display: flex; flex-direction: column;">
                     {% if transaction.category_title %}
@@ -52,6 +43,23 @@
                     <div class="transaction-list__bank-account">{{ transaction.bank_account_title }}</div>
                 </div>
             </li>
+        {% endfor %}
+    </ul>
+    <ul id="category-select" class="menu">
+        {% for category_group in category_group_list %}
+            {% if category_group.categories | length == 1 and not category_group.categories[0].title %}
+                <li class="menu__item" data-id="{{ category_group.categories[0].id }}">{{ category_group.title }}</li>
+            {% else %}
+                <li class="menu__item">
+                    <i class="fa-solid fa-caret-left"></i>
+                    {{ category_group.title }}
+                    <ul class="menu">
+                        {% for category in category_group.categories %}
+                        <li class="menu__item" data-id="{{ category.id }}">{{ category.title }} </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endif %}
         {% endfor %}
     </ul>
 {% endblock %}

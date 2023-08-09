@@ -103,10 +103,31 @@ pub async fn set_transaction_category(transaction_id: i64, category_id: Option<i
 
     let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
     let category = if category_id.is_some() { Some(transaction_category_repository::find_by_id(category_id.unwrap(), conn).await?) } else { None };
-    println!("transaction: {:?}, category: {:?}", transaction, category);
 
     let mut txn = conn.begin().await?;
-    let result = bank_transaction_repository::set_transaction_category(transaction, category, &mut txn).await?;
+    let result = bank_transaction_repository::set_category(transaction, category, &mut txn).await?;
+    txn.commit().await?;
+
+    Ok(result)
+}
+
+pub async fn set_transaction_user_description(transaction_id: i64, user_description: Option<String>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<(), Box<dyn Error>> {
+
+    let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
+
+    let mut txn = conn.begin().await?;
+    let result = bank_transaction_repository::set_user_description(transaction, user_description, &mut txn).await?;
+    txn.commit().await?;
+
+    Ok(result)
+}
+
+pub async fn set_transaction_comment(transaction_id: i64, comment: Option<String>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<(), Box<dyn Error>> {
+
+    let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
+
+    let mut txn = conn.begin().await?;
+    let result = bank_transaction_repository::set_comment(transaction, comment, &mut txn).await?;
     txn.commit().await?;
 
     Ok(result)

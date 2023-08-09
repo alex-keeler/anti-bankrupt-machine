@@ -8,12 +8,43 @@
 }
 .transaction-list__user-description {
   font-weight: 700;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+.transaction-list__user-description--link {
+  text-decoration: underline;
+  font-style: italic;
+  cursor: pointer;
+  color: #666;
+}
+.transaction-list__user-description--input {
+  border: none;
+  border-bottom: 1px solid #999;
+  border-radius: 3px;
+  width: 90%;
+  font-weight: 700;
 }
 .transaction-list__bank-description {
-  font-size: 0.9em;
+  font-size: 0.95em;
   color: #333;
 }
 .transaction-list__comment {
+  font-size: 0.8em;
+  color: #777;
+  margin-top: 5px;
+  cursor: pointer;
+}
+.transaction-list__comment--link {
+  text-decoration: underline;
+  font-style: italic;
+  cursor: pointer;
+  color: #999;
+}
+.transaction-list__comment--input {
+  border: none;
+  border-bottom: 1px solid #ccc;
+  border-radius: 3px;
+  width: 90%;
   font-size: 0.8em;
   color: #777;
 }

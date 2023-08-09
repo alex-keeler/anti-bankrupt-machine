@@ -120,7 +120,7 @@ pub async fn get_transaction_details_by_id(transaction_id: i64, user: &User, con
     Ok(transaction_details)
 }
 
-pub async fn set_transaction_category(transaction: BankTransaction, category: Option<TransactionCategory>, txn: &mut Transaction<'_, MySql>) -> Result<(), Box<dyn Error>> {
+pub async fn set_category(transaction: BankTransaction, category: Option<TransactionCategory>, txn: &mut Transaction<'_, MySql>) -> Result<(), Box<dyn Error>> {
 
     let sql = "\
             UPDATE bank_transaction bt
@@ -131,6 +131,42 @@ pub async fn set_transaction_category(transaction: BankTransaction, category: Op
     // TODO: "NotPersisted" error
     let query = sqlx::query(sql)
         .bind(category.map(|category| category.id.unwrap()))
+        .bind(transaction.id.unwrap());
+
+    let _ = query.execute(txn).await?;
+
+    Ok(())
+}
+
+pub async fn set_user_description(transaction: BankTransaction, user_description: Option<String>, txn: &mut Transaction<'_, MySql>) -> Result<(), Box<dyn Error>> {
+
+    let sql = "\
+            UPDATE bank_transaction bt
+            SET bt.user_description = ?
+            WHERE bt.id = ?
+    ";
+
+    // TODO: "NotPersisted" error
+    let query = sqlx::query(sql)
+        .bind(user_description)
+        .bind(transaction.id.unwrap());
+
+    let _ = query.execute(txn).await?;
+
+    Ok(())
+}
+
+pub async fn set_comment(transaction: BankTransaction, comment: Option<String>, txn: &mut Transaction<'_, MySql>) -> Result<(), Box<dyn Error>> {
+
+    let sql = "\
+            UPDATE bank_transaction bt
+            SET bt.comment = ?
+            WHERE bt.id = ?
+    ";
+
+    // TODO: "NotPersisted" error
+    let query = sqlx::query(sql)
+        .bind(comment)
         .bind(transaction.id.unwrap());
 
     let _ = query.execute(txn).await?;
