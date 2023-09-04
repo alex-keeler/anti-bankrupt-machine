@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::error::Error;
+use chrono::NaiveDate;
 use rocket::fs::TempFile;
 use rocket_db_pools::Pool;
 use sqlx::{Acquire, Connection, MySql, Transaction};
@@ -10,9 +11,10 @@ use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
 use crate::models::query::transaction_category_select::{TransactionCategoryGroupSelect, TransactionCategorySelect};
 use crate::models::query::transaction_details::TransactionDetails;
+use crate::models::query::transaction_group::TransactionGroup;
 use crate::models::transaction_categories::{TransactionCategory, TransactionCategoryGroup};
 use crate::models::users::User;
-use crate::repositories::{bank_transaction_repository, transaction_category_group_repository, transaction_category_repository};
+use crate::repositories::{bank_transaction_repository, budget_repository, transaction_category_group_repository, transaction_category_repository};
 use crate::services::converters::BankRecordConverterFactory;
 use crate::services::factories::Factory;
 use crate::util::bank_record_util;
@@ -22,6 +24,8 @@ pub async fn import_bank_record_file(file: &TempFile<'_>, user: User, bank_accou
     let report = BankRecordConverterFactory::get_instance((&bank_account.bank, file))
         .ok_or("no supporting handler found")?
         .convert(file, &bank_account)?;
+
+    validate_bank_record_report(&report)?;
 
     let mut txn = conn.begin().await?;
 
@@ -35,6 +39,18 @@ pub async fn import_bank_record_file(file: &TempFile<'_>, user: User, bank_accou
     }
 
     txn.commit().await?;
+
+    Ok(())
+}
+
+// TODO: result error handling
+pub fn validate_bank_record_report(report: &BankRecordReport) -> Result<(), Box<dyn Error>> {
+
+    if report.begin_date.is_some() && report.end_date.is_some() {
+        if report.begin_date.unwrap().cmp(&report.end_date.unwrap()).is_ge() {
+            panic!("Begin date cannot be after end date! ({} >= {})", report.begin_date.unwrap(), report.end_date.unwrap());
+        }
+    }
 
     Ok(())
 }
@@ -131,4 +147,9 @@ pub async fn set_transaction_comment(transaction_id: i64, comment: Option<String
     txn.commit().await?;
 
     Ok(result)
+}
+
+pub async fn get_top_transaction_groups_by_budget_id(budget_id: i64, limit: i32, begin_date: Option<NaiveDate>, end_date: Option<NaiveDate>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionGroup>, Box<dyn Error>> {
+    let budget = budget_repository::find_by_id(budget_id, conn).await?;
+    bank_transaction_repository::get_top_transaction_groups_for_budget(budget, limit, begin_date, end_date, user, conn).await
 }

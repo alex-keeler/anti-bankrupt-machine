@@ -5,6 +5,8 @@ pub mod bank_transactions;
 pub mod transaction_categories;
 
 pub mod query;
+pub mod budget;
+pub mod budget_category_mappings;
 
 use rocket_db_pools::Database;
 
