@@ -9,7 +9,9 @@ use sqlx::pool::PoolConnection;
 use crate::models::bank_account_users::BankAccountUserRole;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
+use crate::models::budget::Budget;
 use crate::models::query::transaction_details::TransactionDetails;
+use crate::models::query::transaction_group::TransactionGroup;
 use crate::models::transaction_categories::TransactionCategory;
 use crate::models::users::User;
 
@@ -195,4 +197,57 @@ pub async fn find_editable_transaction_by_id(transaction_id: i64, user: &User, c
     let transaction = query.fetch_one(conn).await?;
 
     Ok(transaction)
+}
+
+pub async fn get_top_transaction_groups_for_budget(budget: Budget, limit: i32, begin_date: Option<NaiveDate>, end_date: Option<NaiveDate>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionGroup>, Box<dyn Error>> {
+
+    let mut sql = String::from("\
+            SELECT bt.bank_description, CAST(SUM(bt.amount) AS INT) AS total_amount, COUNT(bt.id) AS count \
+            FROM bank_transaction bt \
+                JOIN transaction_category tc ON tc.id = bt.category_id \
+                JOIN budget_category_mapping bcm ON bcm.category_id = tc.id \
+                JOIN budget b ON b.id = bcm.budget_id \
+                JOIN bank_account ba ON ba.id = bt.bank_account_id \
+                JOIN bank_account_user bau ON bau.bank_account_id = ba.id \
+                JOIN users u ON u.id = bau.user_id \
+            WHERE b.id = ? \
+                AND u.id = ? \
+                AND bau.role IN (?, ?) \
+    ");
+
+    if let Some(_) = &begin_date {
+        sql = sql + format!(" AND bt.date >= ? ").as_str();
+    }
+
+    if let Some(_) = &end_date {
+        sql = sql + format!(" AND bt.date < ? ").as_str();
+    }
+
+    sql = sql + "\
+                GROUP BY bt.bank_description \
+                ORDER BY SUM(bt.amount) \
+                LIMIT ? \
+            ";
+
+    // sorted by ascending amount since results are negative
+
+    let mut query = sqlx::query_as::<_, TransactionGroup>(sql.as_str())
+        .bind(budget.id)
+        .bind(user.id)
+        .bind(BankAccountUserRole::Owner)
+        .bind(BankAccountUserRole::Editor);
+
+    if let Some(begin_date) = &begin_date {
+        query = query.bind(begin_date);
+    }
+
+    if let Some(end_date) = &end_date {
+        query = query.bind(end_date);
+    }
+
+    query = query.bind(limit);
+
+    let transaction_groups = query.fetch_all(conn).await?;
+
+    Ok(transaction_groups)
 }

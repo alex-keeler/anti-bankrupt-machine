@@ -14,6 +14,8 @@ pub struct BankAccount {
 #[repr(i32)]
 pub enum Bank {
     IndependentBank = 1,
+    ElanFinancial = 2,
+    Venmo = 3,
 }
 
 #[derive(Debug, Type, Serialize, Deserialize)]

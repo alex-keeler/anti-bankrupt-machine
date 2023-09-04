@@ -1,0 +1,93 @@
+{% extends "layout/general-layout" %}
+
+{% block styles %}
+    {{ super() }}
+    <link href="static/css/compiled/budget-dashboard.css" type="text/css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <h1>Budget Dashboard -
+        {% for month_entry in month_range %}
+            {% if month_entry.1 == month %}
+                {{ month_entry.0 }}
+            {% endif %}
+        {% endfor %}
+        {{ year }}
+    </h1>
+    <form class="date-change-form">
+        <select name="month" class="date-change-form__select">
+            {% for month_entry in month_range %}
+                <option value="{{ month_entry.1 }}" {% if month_entry.1 == month %}selected{% endif %}>{{ month_entry.0 }}</option>
+            {% endfor %}
+        </select>
+        <select name="year" class="date-change-form__select">
+            {% for year_entry in range(start=current_year - 4, end=current_year + 1) %}
+                <option value="{{ year_entry }}" {% if year_entry == year %}selected{% endif %}>{{ year_entry }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" class="button" value="Submit">
+    </form>
+    <div class="budget__list">
+        <div class="well budget">
+            <div class="budget__title">Total</div>
+            <div class="budget__details">
+                <div class="budget__spent">
+                    {{ format_amount(amount=total_spent) }} / {{ format_amount(amount=total_budgeted) }}
+                    {% if total_budgeted > 0 %}
+                        <span class="budget__percentage">({{ total_spent / total_budgeted * 100 | round(method='floor') }}%)</span>
+                    {% else %}
+                        <span class="budget__percentage">(0%)</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="budget__bar">
+                {% if total_spent <= total_budgeted %}
+                    <div class="budget__bar-segment budget__bar-segment--spent" style="width: {{ total_spent / total_budgeted * 100 }}%;"></div>
+                {% else %}
+                    <div class="budget__bar-segment budget__bar-segment--spent" style="width: {{ total_budgeted / total_spent * 100 }}%;"></div>
+                    <div class="budget__bar-segment budget__bar-segment--overspent" style="width: {{ 100 - (total_budgeted / total_spent * 100) + 0.01 }}%;"></div>
+                {% endif %}
+            </div>
+        </div>
+        {% if budget_details_list | length > 0 %}
+            <div class="category-header">
+                <span class="category-header__text">Categories</span>
+            </div>
+        {% endif %}
+        {% for budget in budget_details_list %}
+            <div class="well budget" data-id="{{ budget.id }}">
+                <div class="budget__title">{{ budget.title }}</div>
+                <div class="budget__details">
+                    <div class="budget__spent">
+                        {{ format_amount(amount=budget.amount_spent) }} / {{ format_amount(amount=budget.amount) }}
+                        {% if budget.amount > 0 %}
+                            <span class="budget__percentage">({{ budget.amount_spent / budget.amount * 100 | round(method='floor') }}%)</span>
+                        {% else %}
+                            <span class="budget__percentage">(0%)</span>
+                        {% endif %}
+                        <span class="transaction-details__dropdown"><i class="fa-solid fa-chevron-right"></i></span>
+                    </div>
+                    <div class="budget__metadata">{{ format_amount(amount=budget.amount) }}, Every {{ budget.time_months }} month(s)</div>
+                </div>
+                <div class="transaction-details__container" style="display: none;"></div>
+                <div class="budget__bar">
+                    {% if budget.amount_spent <= budget.amount %}
+                        <div class="budget__bar-segment budget__bar-segment--spent" style="width: {{ budget.amount_spent / budget.amount * 100 }}%;"></div>
+                    {% else %}
+                        <div class="budget__bar-segment budget__bar-segment--spent" style="width: {{ budget.amount / budget.amount_spent * 100 }}%;"></div>
+                        <div class="budget__bar-segment budget__bar-segment--overspent" style="width: {{ 100 - (budget.amount / budget.amount_spent * 100) + 0.01 }}%;"></div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        window._year = {{ year }};
+        window._month = {{ month }};
+    </script>
+    <script type="text/javascript" src="static/javascript/pages/budget-dashboard.js"></script>
+{% endblock %}

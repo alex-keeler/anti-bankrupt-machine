@@ -11,6 +11,7 @@ argon2 = "0.5.0"
 csv = "1.2.2"
 regex = "1.9.1"
 num-format = "0.4.4"
+scraper = "0.17.1"
 
 [dependencies.rocket]
 rocket = "=0.5.0-rc.3"

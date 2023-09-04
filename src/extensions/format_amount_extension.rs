@@ -14,7 +14,7 @@ pub fn build() -> impl Function {
                     let cents = (amount % 100).abs();
                     let formatted_amount = match negative {
                         true => format!("-${}.{:02}", dollars.to_formatted_string(&Locale::en), cents),
-                        false => format!("+${}.{:02}", dollars.to_formatted_string(&Locale::en), cents),
+                        false => format!("${}.{:02}", dollars.to_formatted_string(&Locale::en), cents),
                     };
                     Ok(to_value(formatted_amount).unwrap())
                 },

@@ -1,0 +1,133 @@
+.budget {
+    padding: 10px 20px;
+    margin: 20px;
+
+    &__list {
+        max-width: 800px;
+        margin: auto;
+    }
+
+    &__title {
+        font-weight: 700;
+    }
+
+    &__details {
+        margin: 10px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    &__spent {
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+
+        &--under {
+            color: green;
+        }
+
+        &--over {
+            color: red;
+        }
+    }
+
+    &__percentage {
+        font-size: 0.8em;
+        margin-left: 5px;
+        color: #444;
+    }
+
+    &__metadata {
+        color: #666;
+        font-size: 0.7em;
+    }
+
+    &__bar {
+        margin: 10px 0px;
+        height: 20px;
+        background: white;
+        border: 1px solid #aaa;
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+    }
+
+    &__bar-segment {
+        height: 100%;
+
+        &--spent {
+            background-color: #1b9c11;
+        }
+
+        &--overspent {
+            background-color: #fa4716;
+        }
+
+        &--empty {
+            height: 100%;
+            width: 100%;
+            background-color: #aaa;
+        }
+    }
+}
+
+.date-change-form {
+    text-align: center;
+
+    &__select {
+        background-color: #fff;
+        height: 27px;
+        border: 1px solid #aaa;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+}
+
+.category-header {
+    margin-top: 50px;
+    text-align: center;
+
+    &__text {
+        font-weight: 700;
+        border-bottom: 1px solid #aaa;
+        padding: 5px 40px;
+        font-size: 1.5em;
+    }
+}
+
+
+.transaction-details {
+    font-size: 0.8em;
+    color: #555;
+    display: flex;
+    justify-content: space-between;
+    line-height: 1.5em;
+
+    &__dropdown {
+        font-size: 0.7em;
+        margin-left: 8px;
+        color: #888;
+        cursor: pointer;
+    }
+
+    &__container {
+        padding: 0 10px;
+    }
+
+    &__list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    &__amount {
+        &--positive {
+            color: green;
+        }
+
+        &--negative {
+            color: red;
+        }
+    }
+}

@@ -43,10 +43,12 @@ fn rocket() -> Rocket<Build> {
             controllers::bank_record_upload_controller::get_upload_form,
             controllers::bank_record_upload_controller::upload_post,
             controllers::transaction_dashboard_controller::get_dashboard,
+            controllers::budget_dashboard_controller::get_dashboard,
             controllers::api::update_transaction_api_controller::set_category,
             controllers::api::update_transaction_api_controller::remove_category,
             controllers::api::update_transaction_api_controller::set_user_description,
             controllers::api::update_transaction_api_controller::set_comment,
+            controllers::api::transaction_group_api_controller::get_top_transaction_groups_by_category,
         ])
         .mount("/static", routes![static_files])
         .attach(Template::custom(|engines| {

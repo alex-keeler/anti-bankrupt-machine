@@ -1,0 +1,110 @@
+.budget {
+  padding: 10px 20px;
+  margin: 20px;
+}
+.budget__list {
+  max-width: 800px;
+  margin: auto;
+}
+.budget__title {
+  font-weight: 700;
+}
+.budget__details {
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.budget__spent {
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+}
+.budget__spent--under {
+  color: green;
+}
+.budget__spent--over {
+  color: red;
+}
+.budget__percentage {
+  font-size: 0.8em;
+  margin-left: 5px;
+  color: #444;
+}
+.budget__metadata {
+  color: #666;
+  font-size: 0.7em;
+}
+.budget__bar {
+  margin: 10px 0px;
+  height: 20px;
+  background: white;
+  border: 1px solid #aaa;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+}
+.budget__bar-segment {
+  height: 100%;
+}
+.budget__bar-segment--spent {
+  background-color: #1b9c11;
+}
+.budget__bar-segment--overspent {
+  background-color: #fa4716;
+}
+.budget__bar-segment--empty {
+  height: 100%;
+  width: 100%;
+  background-color: #aaa;
+}
+
+.date-change-form {
+  text-align: center;
+}
+.date-change-form__select {
+  background-color: #fff;
+  height: 27px;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.category-header {
+  margin-top: 50px;
+  text-align: center;
+}
+.category-header__text {
+  font-weight: 700;
+  border-bottom: 1px solid #aaa;
+  padding: 5px 40px;
+  font-size: 1.5em;
+}
+
+.transaction-details {
+  font-size: 0.8em;
+  color: #555;
+  display: flex;
+  justify-content: space-between;
+  line-height: 1.5em;
+}
+.transaction-details__dropdown {
+  font-size: 0.7em;
+  margin-left: 8px;
+  color: #888;
+  cursor: pointer;
+}
+.transaction-details__container {
+  padding: 0 10px;
+}
+.transaction-details__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.transaction-details__amount--positive {
+  color: green;
+}
+.transaction-details__amount--negative {
+  color: red;
+}
