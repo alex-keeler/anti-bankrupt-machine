@@ -7,10 +7,11 @@ use crate::models::transaction_categories::CategoryClassification;
 pub struct BudgetDetails {
     pub id: i64,
     pub title: String,
-    pub amount: i32,
-    pub time_months: i32,
-    pub on_payment_month: bool,
-    pub budget_type: BudgetType,
     pub classification: CategoryClassification,
+    pub budget_type: BudgetType,
+    pub amount: i32,
+    pub time_months: u32,
+    pub months_until_payment: u32,
     pub amount_spent: i32,
+    pub amount_contributed: i32,
 }

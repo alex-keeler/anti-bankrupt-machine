@@ -1,4 +1,6 @@
 $(document).ready(function() {
+    showBudgetsForClassification('wants');
+
     $('.transaction-details__dropdown').on('click', function() {
         let budget = $(this).parents('.budget');
         let transactionDetailsContainer = budget.find('.transaction-details__container');
@@ -47,6 +49,31 @@ $(document).ready(function() {
             transactionDetailsContainer.empty().append(list);
         });
     });
+
+    $('.classification-select__entry').on('click', function() {
+        $('.classification-select__entry').removeClass('classification-select__entry--selected');
+        $(this).addClass('classification-select__entry--selected');
+
+        let classification = $(this).data('classification');
+        showBudgetsForClassification(classification);
+    });
+
+    function showBudgetsForClassification(classification) {
+        $('.budget').not('.budget--total').hide();
+        switch (classification) {
+            case 'wants':
+                $('.budget--wants').show();
+                break;
+            case 'needs':
+                $('.budget--needs').show();
+                break;
+            case 'savings':
+                $('.budget--savings').show();
+                break;
+            default:
+                console.error('Unknown classification: ', classification);
+        }
+    }
 
     function formatAmount(amount) {
 

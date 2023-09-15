@@ -52,7 +52,7 @@ pub async fn insert(transaction: BankTransaction, txn: &mut Transaction<'_, MySq
 
     let sql = "\
         INSERT INTO bank_transaction \
-        (date, bank_description, user_description, comment, amount, bank_account_id, category_id, saving_goal_id)
+        (date, bank_description, user_description, comment, amount, bank_account_id, category_id, contribution_budget_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ";
 
@@ -64,27 +64,28 @@ pub async fn insert(transaction: BankTransaction, txn: &mut Transaction<'_, MySq
         .bind(transaction.amount)
         .bind(transaction.bank_account_id)
         .bind(transaction.category_id)
-        .bind(transaction.saving_goal_id);
+        .bind(transaction.contribution_budget_id);
 
     let _ = query.execute(txn).await?;
 
     Ok(())
 }
 
-pub async fn get_transaction_details_by_user(user: User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionDetails>, Box<dyn Error>> {
+pub async fn get_transaction_details_by_user(user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionDetails>, Box<dyn Error>> {
 
     let sql = "\
             SELECT bt.id, bt.date, bt.bank_description, bt.user_description, bt.comment, bt.amount, \
                    tc.id AS category_id, IF(tc.title IS NULL, tcg.title, CONCAT(tcg.title, ' - ', tc.title)) AS category_title, \
-                   tcg.classification as category_classification,sg.id AS saving_goal_id, \
-                   sg.title AS saving_goal_title, ba.title AS bank_account_title \
+                   tcg.classification as category_classification, cb.id AS contribution_budget_id, \
+                   cb.title AS contribution_budget_title, cb.classification AS contribution_budget_classification, \
+                   ba.title AS bank_account_title \
             FROM bank_account_user bau \
                 JOIN bank_account ba ON ba.id = bau.bank_account_id \
                 JOIN users u ON u.id = bau.user_id \
                 JOIN bank_transaction bt ON bt.bank_account_id = ba.id \
                 LEFT JOIN transaction_category tc ON tc.id = bt.category_id \
                 LEFT JOIN transaction_category_group tcg ON tcg.id = tc.category_group_id \
-                LEFT JOIN saving_goal sg ON sg.id = bt.saving_goal_id \
+                LEFT JOIN budget cb ON cb.id = bt.contribution_budget_id \
             WHERE u.id = ? \
             ORDER BY bt.date DESC, bt.id ASC \
     ";
@@ -101,15 +102,16 @@ pub async fn get_transaction_details_by_id(transaction_id: i64, user: &User, con
     let sql = "\
             SELECT bt.id, bt.date, bt.bank_description, bt.user_description, bt.comment, bt.amount, \
                    tc.id AS category_id, IF(tc.title IS NULL, tcg.title, CONCAT(tcg.title, ' - ', tc.title)) AS category_title, \
-                   tcg.classification as category_classification,sg.id AS saving_goal_id, \
-                   sg.title AS saving_goal_title, ba.title AS bank_account_title \
+                   tcg.classification as category_classification, cb.id AS contribution_budget_id, \
+                   cb.title AS contribution_budget_title, cb.classification AS contribution_budget_classification, \
+                   ba.title AS bank_account_title \
             FROM bank_transaction bt \
                 JOIN bank_account ba ON ba.id = bt.bank_account_id \
                 JOIN bank_account_user bau ON bau.bank_account_id = ba.id \
                 JOIN users u ON u.id = bau.user_id \
                 LEFT JOIN transaction_category tc ON tc.id = bt.category_id \
                 LEFT JOIN transaction_category_group tcg ON tcg.id = tc.category_group_id \
-                LEFT JOIN saving_goal sg ON sg.id = bt.saving_goal_id \
+                LEFT JOIN budget cb ON cb.id = bt.contribution_budget_id \
             WHERE bt.id = ? \
                 AND u.id = ? \
     ";
@@ -169,6 +171,24 @@ pub async fn set_comment(transaction: BankTransaction, comment: Option<String>, 
     // TODO: "NotPersisted" error
     let query = sqlx::query(sql)
         .bind(comment)
+        .bind(transaction.id.unwrap());
+
+    let _ = query.execute(txn).await?;
+
+    Ok(())
+}
+
+pub async fn set_contribution_budget(transaction: BankTransaction, budget_id: Option<i64>, txn: &mut Transaction<'_, MySql>) -> Result<(), Box<dyn Error>> {
+
+    let sql = "\
+            UPDATE bank_transaction bt
+            SET bt.contribution_budget_id = ?
+            WHERE bt.id = ?
+    ";
+
+    // TODO: "NotPersisted" error
+    let query = sqlx::query(sql)
+        .bind(budget_id)
         .bind(transaction.id.unwrap());
 
     let _ = query.execute(txn).await?;

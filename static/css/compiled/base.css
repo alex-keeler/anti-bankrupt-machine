@@ -61,6 +61,7 @@ button:hover, .button:hover {
 }
 .menu__item {
   padding: 5px 10px;
+  white-space: nowrap;
 }
 .menu__item:hover {
   background-color: #444;

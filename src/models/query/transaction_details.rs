@@ -16,7 +16,8 @@ pub struct TransactionDetails {
     pub category_id: Option<i64>,
     pub category_title: Option<String>,
     pub category_classification: Option<CategoryClassification>,
-    pub saving_goal_id: Option<i64>,
-    pub saving_goal_title: Option<String>,
+    pub contribution_budget_id: Option<i64>,
+    pub contribution_budget_title: Option<String>,
+    pub contribution_budget_classification: Option<CategoryClassification>,
     pub bank_account_title: String,
 }

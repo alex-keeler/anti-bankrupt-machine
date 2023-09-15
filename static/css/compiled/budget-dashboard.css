@@ -34,6 +34,8 @@
 .budget__metadata {
   color: #666;
   font-size: 0.7em;
+  line-height: 1.4em;
+  text-align: right;
 }
 .budget__bar {
   margin: 10px 0px;
@@ -53,9 +55,19 @@
 .budget__bar-segment--overspent {
   background-color: #fa4716;
 }
-.budget__bar-segment--empty {
-  height: 100%;
-  width: 100%;
+.budget__bar-segment--contributed {
+  background-color: #2688ff;
+}
+.budget__bar-segment--overcontributed {
+  background-color: #003c85;
+}
+.budget__bar-segment--overspent-overcontributed {
+  background-color: #087000;
+}
+.budget__bar-segment--unused {
+  background-color: #fff;
+}
+.budget__bar-segment--non-applicable {
   background-color: #aaa;
 }
 
@@ -70,15 +82,31 @@
   cursor: pointer;
 }
 
-.category-header {
-  margin-top: 50px;
-  text-align: center;
+.classification-select {
+  border: 1px solid #aaa;
+  border-radius: 10px;
+  display: flex;
+  width: auto;
+  overflow: hidden;
+  background-color: #f6f6f6;
 }
-.category-header__text {
+.classification-select__container {
+  display: flex;
+  justify-content: center;
+}
+.classification-select__entry {
+  padding: 8px 15px;
+  border-right: 1px solid #aaa;
+  cursor: pointer;
   font-weight: 700;
-  border-bottom: 1px solid #aaa;
-  padding: 5px 40px;
-  font-size: 1.5em;
+}
+.classification-select__entry:last-child {
+  border-right: none;
+}
+.classification-select__entry--selected {
+  background-color: #aaa;
+  color: #fff;
+  cursor: default;
 }
 
 .transaction-details {
