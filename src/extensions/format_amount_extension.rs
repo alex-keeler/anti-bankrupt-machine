@@ -18,7 +18,7 @@ pub fn build() -> impl Function {
                     };
                     Ok(to_value(formatted_amount).unwrap())
                 },
-                Err(_) => Err("Amount argument not found".into())
+                Err(err) => Err(err.into())
             }
             None => Err("Amount argument not found".into()),
         }

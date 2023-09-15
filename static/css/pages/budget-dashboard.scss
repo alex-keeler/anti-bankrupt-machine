@@ -41,6 +41,8 @@
     &__metadata {
         color: #666;
         font-size: 0.7em;
+        line-height: 1.4em;
+        text-align: right;
     }
 
     &__bar {
@@ -64,9 +66,23 @@
             background-color: #fa4716;
         }
 
-        &--empty {
-            height: 100%;
-            width: 100%;
+        &--contributed {
+            background-color: #2688ff;
+        }
+
+        &--overcontributed {
+            background-color: #003c85;
+        }
+
+        &--overspent-overcontributed {
+            background-color: #087000;
+        }
+
+        &--unused {
+            background-color: #fff;
+        }
+
+        &--non-applicable {
             background-color: #aaa;
         }
     }
@@ -84,18 +100,36 @@
     }
 }
 
-.category-header {
-    margin-top: 50px;
-    text-align: center;
+.classification-select {
+    border: 1px solid #aaa;
+    border-radius: 10px;
+    display: flex;
+    width: auto;
+    overflow: hidden;
+    background-color: #f6f6f6;
 
-    &__text {
+    &__container {
+        display: flex;
+        justify-content: center;
+    }
+
+    &__entry {
+        padding: 8px 15px;
+        border-right: 1px solid #aaa;
+        cursor: pointer;
         font-weight: 700;
-        border-bottom: 1px solid #aaa;
-        padding: 5px 40px;
-        font-size: 1.5em;
+
+        &:last-child {
+            border-right: none;
+        }
+
+        &--selected {
+            background-color: #aaa;
+            color: #fff;
+            cursor: default;
+        }
     }
 }
-
 
 .transaction-details {
     font-size: 0.8em;

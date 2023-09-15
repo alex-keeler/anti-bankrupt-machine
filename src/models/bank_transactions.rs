@@ -12,5 +12,5 @@ pub struct BankTransaction {
     pub amount: i32,
     pub bank_account_id: i64,
     pub category_id: Option<i64>,
-    pub saving_goal_id: Option<i64>
+    pub contribution_budget_id: Option<i64>
 }

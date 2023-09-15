@@ -34,9 +34,22 @@ function setupCategoryElement(categoryElement) {
         $(categoryElement).find('.transaction-list__category-remove').on('click', function() {
             let category = $(this).parents('.transaction-list__category');
             let transactionId = $(this).parents('.transaction-list__entry').data('id');
-            $.post('/secure/api/remove-category/' + transactionId, function(transactionDetails) {
-                updateCategoryElement(category, transactionDetails);
-            });
+
+            switch (category.data('type')) {
+                case "category":
+                    $.post('/secure/api/remove-category/' + transactionId, function(transactionDetails) {
+                        updateCategoryElement(category, transactionDetails);
+                    });
+                    break;
+                case "budget":
+                    $.post('/secure/api/remove-contribution-budget/' + transactionId, function(transactionDetails) {
+                        updateCategoryElement(category, transactionDetails);
+                    });
+                    break;
+                default:
+                    console.error('unknown category type: ', category.data('type'));
+                    break;
+            }
         });
     }
 }
@@ -188,15 +201,25 @@ function openCategorySelectMenu(categoryElement) {
 
     $('.menu__item').off('click').on('click', function(e) {
         e.stopPropagation();
-        let categoryId = $(this).data('id');
-        if (!categoryId) {
-            return;
-        }
 
         let transactionId = $('#category-select').data('transaction-id');
-        $.post('/secure/api/set-category/' + transactionId + '/' + categoryId, function(transactionDetails) {
-            updateCategoryElement(categoryElement, transactionDetails);
-        });
+        let categoryId = $(this).data('id');
+
+        switch ($(this).data('type')) {
+            case "category":
+                $.post('/secure/api/set-category/' + transactionId + '/' + categoryId, function(transactionDetails) {
+                    updateCategoryElement(categoryElement, transactionDetails);
+                });
+                break;
+            case "budget":
+                $.post('/secure/api/set-contribution-budget/' + transactionId + '/' + categoryId, function(transactionDetails) {
+                    updateCategoryElement(categoryElement, transactionDetails);
+                });
+                break;
+            default:
+                console.error('Unknown category type: ', $(this).data('type'));
+                break;
+        }
     });
 }
 
@@ -206,11 +229,23 @@ function updateCategoryElement(categoryElement, transactionDetails) {
 
     if (transactionDetails.category_id) {
         categoryElement.removeClass('transaction-list__category--uncategorized');
+        categoryElement.data('type', 'category');
         let textElem = $('<span/>').text(transactionDetails.category_title);
+        let removeIcon = $('<span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>');
+        categoryElement.empty().append(textElem, removeIcon);
+    } else if (transactionDetails.contribution_budget_id) {
+        categoryElement.removeClass('transaction-list__category--uncategorized');
+        categoryElement.data('type', 'budget');
+        console.log(transactionDetails.contribution_budget_classification);
+        let text = transactionDetails.contribution_budget_classification === 'Saving' ?
+            'Saving - ' + transactionDetails.contribution_budget_title :
+            'Financing - ' + transactionDetails.contribution_budget_title;
+        let textElem = $('<span/>').text(text);
         let removeIcon = $('<span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>');
         categoryElement.empty().append(textElem, removeIcon);
     } else {
         categoryElement.addClass('transaction-list__category--uncategorized');
+        categoryElement.data('type', '');
         let textElem = $('<span/>').text('Uncategorized');
         categoryElement.empty().append(textElem);
     }

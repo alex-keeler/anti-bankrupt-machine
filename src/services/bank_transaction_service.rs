@@ -76,7 +76,7 @@ pub fn find_bank_transactions_to_add(report: BankRecordReport, existing_transact
     transactions_to_add
 }
 
-pub async fn get_transaction_details_by_user(user: User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionDetails>, Box<dyn Error>> {
+pub async fn get_transaction_details_by_user(user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionDetails>, Box<dyn Error>> {
     bank_transaction_repository::get_transaction_details_by_user(user, conn).await
 }
 
@@ -144,6 +144,17 @@ pub async fn set_transaction_comment(transaction_id: i64, comment: Option<String
 
     let mut txn = conn.begin().await?;
     let result = bank_transaction_repository::set_comment(transaction, comment, &mut txn).await?;
+    txn.commit().await?;
+
+    Ok(result)
+}
+
+pub async fn set_transaction_contribution_budget(transaction_id: i64, budget_id: Option<i64>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<(), Box<dyn Error>> {
+
+    let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
+
+    let mut txn = conn.begin().await?;
+    let result = bank_transaction_repository::set_contribution_budget(transaction, budget_id, &mut txn).await?;
     txn.commit().await?;
 
     Ok(result)

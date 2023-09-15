@@ -7,12 +7,20 @@ use crate::models::transaction_categories::CategoryClassification;
 pub struct Budget {
     pub id: Option<i64>,
     pub title: String,
-    pub amount: i32,
-    pub time_months: i32,
-    pub start_date: NaiveDate,
-    pub budget_type: BudgetType,
     pub classification: CategoryClassification,
-    // TODO: add user_id field, filter on it for repository queries
+    pub budget_type: BudgetType,
+    pub user_id: i64,
+    pub sort_order: i32,
+}
+
+#[derive(Debug, FromRow, Serialize, Deserialize)]
+pub struct BudgetHistory {
+    pub id: Option<i64>,
+    pub budget_id: i64,
+    pub amount: i32,
+    pub time_months: u32,
+    pub payment_date: NaiveDate,
+    pub recur_count: Option<u32>,
 }
 
 #[derive(Debug, Type, Serialize, Deserialize)]

@@ -31,9 +31,19 @@
                 </div>
                 <div style="display: flex; flex-direction: column;">
                     {% if transaction.category_title %}
-                        <div class="transaction-list__category">
+                        <div class="transaction-list__category" data-type="category">
                             <span>{{ transaction.category_title }}</span>
                             <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
+                        </div>
+                    {% elif transaction.contribution_budget_title %}
+                        <div class="transaction-list__category" data-type="budget">
+                            {% if transaction.contribution_budget_classification == 'Saving' %}
+                                <span>Saving - {{ transaction.contribution_budget_title }}</span>
+                                <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
+                            {% else %}
+                                <span>Financing - {{ transaction.contribution_budget_title }}</span>
+                                <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
+                            {% endif %}
                         </div>
                     {% else %}
                         <div class="transaction-list__category transaction-list__category--uncategorized">
@@ -48,19 +58,41 @@
     <ul id="category-select" class="menu">
         {% for category_group in category_group_list %}
             {% if category_group.categories | length == 1 and not category_group.categories[0].title %}
-                <li class="menu__item" data-id="{{ category_group.categories[0].id }}">{{ category_group.title }}</li>
+                <li class="menu__item" data-type="category" data-id="{{ category_group.categories[0].id }}">{{ category_group.title }}</li>
             {% else %}
                 <li class="menu__item">
                     <i class="fa-solid fa-caret-left"></i>
                     {{ category_group.title }}
                     <ul class="menu">
                         {% for category in category_group.categories %}
-                        <li class="menu__item" data-id="{{ category.id }}">{{ category.title }} </li>
+                            <li class="menu__item" data-type="category" data-id="{{ category.id }}">{{ category.title }} </li>
                         {% endfor %}
                     </ul>
                 </li>
             {% endif %}
         {% endfor %}
+        {% if financeable_budgets | length > 0  %}
+            <li class="menu__item">
+                <i class="fa-solid fa-caret-left"></i>
+                Financing
+                <ul class="menu">
+                    {% for budget in financeable_budgets %}
+                        <li class="menu__item" data-type="budget" data-id="{{ budget.id }}">{{ budget.title }} </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+        {% if saving_budgets | length > 0  %}
+            <li class="menu__item">
+                <i class="fa-solid fa-caret-left"></i>
+                Saving
+                <ul class="menu">
+                    {% for budget in saving_budgets %}
+                        <li class="menu__item" data-type="budget" data-id="{{ budget.id }}">{{ budget.title }} </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
     </ul>
 {% endblock %}
 
