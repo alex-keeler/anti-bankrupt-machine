@@ -237,8 +237,8 @@ function updateCategoryElement(categoryElement, transactionDetails) {
         categoryElement.removeClass('transaction-list__category--uncategorized');
         categoryElement.data('type', 'budget');
         console.log(transactionDetails.contribution_budget_classification);
-        let text = transactionDetails.contribution_budget_classification === 'Saving' ?
-            'Saving - ' + transactionDetails.contribution_budget_title :
+        let text = transactionDetails.contribution_budget_classification === 'Savings' ?
+            'Savings - ' + transactionDetails.contribution_budget_title :
             'Financing - ' + transactionDetails.contribution_budget_title;
         let textElem = $('<span/>').text(text);
         let removeIcon = $('<span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>');
