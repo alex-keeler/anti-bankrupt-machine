@@ -47,8 +47,8 @@ pub async fn import_bank_record_file(file: &TempFile<'_>, user: User, bank_accou
 pub fn validate_bank_record_report(report: &BankRecordReport) -> Result<(), Box<dyn Error>> {
 
     if report.begin_date.is_some() && report.end_date.is_some() {
-        if report.begin_date.unwrap().cmp(&report.end_date.unwrap()).is_ge() {
-            panic!("Begin date cannot be after end date! ({} >= {})", report.begin_date.unwrap(), report.end_date.unwrap());
+        if report.begin_date.unwrap().cmp(&report.end_date.unwrap()).is_gt() {
+            panic!("Begin date cannot be after end date! ({} > {})", report.begin_date.unwrap(), report.end_date.unwrap());
         }
     }
 

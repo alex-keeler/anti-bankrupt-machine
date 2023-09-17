@@ -37,8 +37,8 @@
                         </div>
                     {% elif transaction.contribution_budget_title %}
                         <div class="transaction-list__category" data-type="budget">
-                            {% if transaction.contribution_budget_classification == 'Saving' %}
-                                <span>Saving - {{ transaction.contribution_budget_title }}</span>
+                            {% if transaction.contribution_budget_classification == 'Savings' %}
+                                <span>Savings - {{ transaction.contribution_budget_title }}</span>
                                 <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
                             {% else %}
                                 <span>Financing - {{ transaction.contribution_budget_title }}</span>

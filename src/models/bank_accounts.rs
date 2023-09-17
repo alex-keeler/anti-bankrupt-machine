@@ -16,6 +16,7 @@ pub enum Bank {
     IndependentBank = 1,
     ElanFinancial = 2,
     Venmo = 3,
+    AmericanExpress = 4,
 }
 
 #[derive(Debug, Type, Serialize, Deserialize)]

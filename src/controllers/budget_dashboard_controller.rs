@@ -28,7 +28,7 @@ pub async fn get_dashboard(year: Option<i32>, month: Option<u32>, user: User, mu
             variable_budgeted += budget.amount;
         }
     }
-
+    
     Template::render("pages/budget-dashboard", context! { budget_details_list, year, month,
         current_year: current_date.year(), month_range: MONTH_RANGE, variable_spent, variable_budgeted })
 }
