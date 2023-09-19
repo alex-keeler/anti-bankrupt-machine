@@ -84,9 +84,9 @@ pub async fn get_transaction_details_by_id(transaction_id: i64, user: &User, con
     bank_transaction_repository::get_transaction_details_by_id(transaction_id, user, conn).await
 }
 
-pub async fn get_transaction_category_group_select_list(conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionCategoryGroupSelect>, Box<dyn Error>> {
+pub async fn get_transaction_category_group_select_list(user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionCategoryGroupSelect>, Box<dyn Error>> {
 
-    let category_list = transaction_category_repository::find_all(conn).await?;
+    let category_list = transaction_category_repository::find_all(user, conn).await?;
     let category_group_list = transaction_category_group_repository::find_all(conn).await?;
 
     let mut category_select_map = HashMap::new();
@@ -107,9 +107,12 @@ pub async fn get_transaction_category_group_select_list(conn: &mut PoolConnectio
             id: category_group.id.unwrap(),
             title: category_group.title,
             classification: category_group.classification,
-            categories: category_select_map.remove(&category_group.id.unwrap()).unwrap(),
+            categories: category_select_map.remove(&category_group.id.unwrap()).unwrap_or(Vec::new()),
         };
-        category_group_select_list.push(category_group_select);
+
+        if !category_group_select.categories.is_empty() {
+            category_group_select_list.push(category_group_select);
+        }
     }
 
     Ok(category_group_select_list)
@@ -118,7 +121,7 @@ pub async fn get_transaction_category_group_select_list(conn: &mut PoolConnectio
 pub async fn set_transaction_category(transaction_id: i64, category_id: Option<i64>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<(), Box<dyn Error>> {
 
     let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
-    let category = if category_id.is_some() { Some(transaction_category_repository::find_by_id(category_id.unwrap(), conn).await?) } else { None };
+    let category = if category_id.is_some() { Some(transaction_category_repository::find_by_id(category_id.unwrap(), user, conn).await?) } else { None };
 
     let mut txn = conn.begin().await?;
     let result = bank_transaction_repository::set_category(transaction, category, &mut txn).await?;

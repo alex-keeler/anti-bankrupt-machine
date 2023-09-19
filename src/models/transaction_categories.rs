@@ -6,6 +6,7 @@ pub struct TransactionCategory {
     pub id: Option<i64>,
     pub title: Option<String>,
     pub category_group_id: i64,
+    pub user_id: i64,
 }
 
 #[derive(Debug, FromRow, Serialize, Deserialize, PartialEq, Eq, Hash)]
