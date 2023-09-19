@@ -2,6 +2,7 @@ use std::error::Error;
 use sqlx::MySql;
 use sqlx::pool::PoolConnection;
 use crate::models::transaction_categories::TransactionCategoryGroup;
+use crate::models::users::User;
 
 pub async fn find_all(conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionCategoryGroup>, Box<dyn Error>> {
 

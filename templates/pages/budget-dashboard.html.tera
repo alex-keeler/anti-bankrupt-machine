@@ -73,17 +73,22 @@
                 <div class="budget__title">{{ budget.title }}</div>
                 <div class="budget__details">
                     <div class="budget__spent">
-                        {% if budget.months_until_payment == 0 %}
+                        {% if budget.months_until_payment == 0 and budget.classification != 'Savings' %}
                             {{ format_amount(amount=budget.amount_spent) }} / {{ format_amount(amount=budget.amount) }}
+                            {% if budget.amount > 0 %}
+                                <span class="budget__percentage">({{ budget.amount_spent / budget.amount * 100 | round(method='floor') }}%)</span>
+                                <span class="transaction-details__dropdown"><i class="fa-solid fa-chevron-right"></i></span>
+                            {% else %}
+                                <span class="budget__percentage">(0%)</span>
+                            {% endif %}
                         {% else %}
                             {% set amount_current = amount_monthly * (budget.time_months - budget.months_until_payment) %}
                             {{ format_amount(amount=budget.amount_contributed) }} / {{ format_amount(amount=amount_current) }}
-                        {% endif %}
-                        {% if budget.amount > 0 %}
-                            <span class="budget__percentage">({{ budget.amount_spent / budget.amount * 100 | round(method='floor') }}%)</span>
-                            <span class="transaction-details__dropdown"><i class="fa-solid fa-chevron-right"></i></span>
-                        {% else %}
-                            <span class="budget__percentage">(0%)</span>
+                            {% if amount_current > 0 %}
+                                <span class="budget__percentage">({{ budget.amount_contributed / amount_current * 100 | round(method='floor') }}%)</span>
+                            {% else %}
+                                <span class="budget__percentage">(0%)</span>
+                            {% endif %}
                         {% endif %}
                     </div>
                     <div class="budget__metadata">
