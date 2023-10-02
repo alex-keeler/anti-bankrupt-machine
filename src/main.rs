@@ -44,12 +44,15 @@ fn rocket() -> Rocket<Build> {
             controllers::bank_record_upload_controller::upload_post,
             controllers::transaction_dashboard_controller::get_dashboard,
             controllers::budget_dashboard_controller::get_dashboard,
+            controllers::cash_flow_dashboard_controller::get_dashboard,
             controllers::api::update_transaction_api_controller::set_category,
             controllers::api::update_transaction_api_controller::remove_category,
             controllers::api::update_transaction_api_controller::set_contribution_budget,
             controllers::api::update_transaction_api_controller::remove_contribution_budget,
             controllers::api::update_transaction_api_controller::set_user_description,
             controllers::api::update_transaction_api_controller::set_comment,
+            controllers::api::update_transaction_api_controller::set_hide_from_calculations,
+            controllers::api::cash_flow_api_controller::get_cash_flow_data,
             controllers::api::transaction_group_api_controller::get_top_transaction_groups_by_category,
         ])
         .mount("/static", routes![static_files])

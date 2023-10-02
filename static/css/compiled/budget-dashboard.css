@@ -71,17 +71,6 @@
   background-color: #aaa;
 }
 
-.date-change-form {
-  text-align: center;
-}
-.date-change-form__select {
-  background-color: #fff;
-  height: 27px;
-  border: 1px solid #aaa;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
 .classification-select {
   border: 1px solid #aaa;
   border-radius: 10px;

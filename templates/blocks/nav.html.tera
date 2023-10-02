@@ -2,10 +2,10 @@
     <div class="nav__list">
         <a class="nav__link" href="secure/dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
         <a class="nav__link" href="secure/upload/bank-record"><i class="fa-solid fa-upload"></i> Upload Bank Records</a>
-        <a class="nav__link"><i class="fa-solid fa-money-bills"></i> Cash Flow Dashboard</a>
+        <a class="nav__link" href="secure/cash-flow/dashboard"><i class="fa-solid fa-money-bills"></i> Cash Flow Dashboard</a>
         <a class="nav__link" href="secure/transaction/dashboard"><i class="fa-solid fa-wallet"></i> Transactions</a>
         <a class="nav__link" href="secure/budget/dashboard"><i class="fa-solid fa-piggy-bank"></i> Budgets</a>
         <a class="nav__link"><i class="fa-solid fa-building-columns"></i> Bank Accounts</a>
-        <a class="nav__link nav__link--logout" href="logout"><i class="fa-solid fa-arrow-left"></i> Logout</a>
+<!--        <a class="nav__link nav__link&#45;&#45;logout" href="logout"><i class="fa-solid fa-arrow-left"></i> Logout</a>-->
     </div>
 </div>

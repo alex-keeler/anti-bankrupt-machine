@@ -20,4 +20,5 @@ pub struct TransactionDetails {
     pub contribution_budget_title: Option<String>,
     pub contribution_budget_classification: Option<CategoryClassification>,
     pub bank_account_title: String,
+    pub hide_from_calculations: bool,
 }

@@ -56,3 +56,11 @@ pub async fn set_comment(transaction_id: i64, mut comment: Option<String>, user:
     let transaction_details = bank_transaction_service::get_transaction_details_by_id(transaction_id, &user, &mut *conn).await.unwrap();
     Json(transaction_details)
 }
+
+#[post("/secure/api/set-hide-from-calculations/<transaction_id>/<hide_from_calculations>")]
+pub async fn set_hide_from_calculations(transaction_id: i64, hide_from_calculations: bool, user: User, mut conn: Connection<DB>) -> Json<TransactionDetails> {
+
+    bank_transaction_service::set_transaction_hide_from_calculations(transaction_id, hide_from_calculations, &user, &mut *conn).await.unwrap();
+    let transaction_details = bank_transaction_service::get_transaction_details_by_id(transaction_id, &user, &mut *conn).await.unwrap();
+    Json(transaction_details)
+}

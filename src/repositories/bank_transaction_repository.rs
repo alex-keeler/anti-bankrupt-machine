@@ -74,7 +74,7 @@ pub async fn insert(transaction: BankTransaction, txn: &mut Transaction<'_, MySq
 pub async fn get_transaction_details_by_user(user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionDetails>, Box<dyn Error>> {
 
     let sql = "\
-            SELECT bt.id, bt.date, bt.bank_description, bt.user_description, bt.comment, bt.amount, \
+            SELECT bt.id, bt.date, bt.bank_description, bt.user_description, bt.comment, bt.amount, bt.hide_from_calculations, \
                    tc.id AS category_id, IF(tc.title IS NULL, tcg.title, CONCAT(tcg.title, ' - ', tc.title)) AS category_title, \
                    tcg.classification as category_classification, cb.id AS contribution_budget_id, \
                    cb.title AS contribution_budget_title, cb.classification AS contribution_budget_classification, \
@@ -100,7 +100,7 @@ pub async fn get_transaction_details_by_user(user: &User, conn: &mut PoolConnect
 pub async fn get_transaction_details_by_id(transaction_id: i64, user: &User, conn: &mut PoolConnection<MySql>) -> Result<TransactionDetails, Box<dyn Error>> {
 
     let sql = "\
-            SELECT bt.id, bt.date, bt.bank_description, bt.user_description, bt.comment, bt.amount, \
+            SELECT bt.id, bt.date, bt.bank_description, bt.user_description, bt.comment, bt.amount, bt.hide_from_calculations, \
                    tc.id AS category_id, IF(tc.title IS NULL, tcg.title, CONCAT(tcg.title, ' - ', tc.title)) AS category_title, \
                    tcg.classification as category_classification, cb.id AS contribution_budget_id, \
                    cb.title AS contribution_budget_title, cb.classification AS contribution_budget_classification, \
@@ -178,6 +178,24 @@ pub async fn set_comment(transaction: BankTransaction, comment: Option<String>, 
     Ok(())
 }
 
+pub async fn set_hide_from_calculations(transaction: BankTransaction, hide_from_calculations: bool, txn: &mut Transaction<'_, MySql>) -> Result<(), Box<dyn Error>> {
+
+    let sql = "\
+            UPDATE bank_transaction bt
+            SET bt.hide_from_calculations = ?
+            WHERE bt.id = ?
+    ";
+
+    // TODO: "NotPersisted" error
+    let query = sqlx::query(sql)
+        .bind(hide_from_calculations)
+        .bind(transaction.id.unwrap());
+
+    let _ = query.execute(txn).await?;
+
+    Ok(())
+}
+
 pub async fn set_contribution_budget(transaction: BankTransaction, budget_id: Option<i64>, txn: &mut Transaction<'_, MySql>) -> Result<(), Box<dyn Error>> {
 
     let sql = "\
@@ -232,7 +250,7 @@ pub async fn get_top_transaction_groups_for_budget(budget: Budget, limit: i32, b
                 JOIN users u ON u.id = bau.user_id \
             WHERE b.id = ? \
                 AND u.id = ? \
-                AND bau.role IN (?, ?) \
+                AND bt.hide_from_transactions = FALSE \
     ");
 
     if let Some(_) = &begin_date {
@@ -253,9 +271,7 @@ pub async fn get_top_transaction_groups_for_budget(budget: Budget, limit: i32, b
 
     let mut query = sqlx::query_as::<_, TransactionGroup>(sql.as_str())
         .bind(budget.id)
-        .bind(user.id)
-        .bind(BankAccountUserRole::Owner)
-        .bind(BankAccountUserRole::Editor);
+        .bind(user.id);
 
     if let Some(begin_date) = &begin_date {
         query = query.bind(begin_date);

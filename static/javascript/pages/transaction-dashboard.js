@@ -13,6 +13,10 @@ $(document).ready(function() {
     $('.transaction-list__comment').each(function() {
         setupCommentElement($(this));
     });
+
+    $('.transaction-list__hide-from-calculations').each(function() {
+        setupHideFromCalculationsElement($(this));
+    })
 });
 
 function setupCategoryElement(categoryElement) {
@@ -168,6 +172,30 @@ function showCommentElement(commentElement, editing) {
         text.hide();
         input.hide();
     }
+}
+
+function setupHideFromCalculationsElement(hideFromCalculationsElement) {
+    $(hideFromCalculationsElement).on('click', function() {
+        let transaction = $(hideFromCalculationsElement).parents('.transaction-list__entry');
+        let transactionId = transaction.data('id');
+        let hideFromCalculations = !(transaction.data('hidden-from-calculations'));
+        $.post('/secure/api/set-hide-from-calculations/' + transactionId + '/' + hideFromCalculations, function(transactionDetails) {
+            updateHideFromCalculationsElement(hideFromCalculationsElement, transactionDetails);
+        });
+    });
+}
+
+function updateHideFromCalculationsElement(hideFromCalculationsElement, transactionDetails) {
+    let icon = $(hideFromCalculationsElement).find('i');
+    let transaction = $(hideFromCalculationsElement).parents('.transaction-list__entry');
+
+    if (transactionDetails.hide_from_calculations) {
+        icon.removeClass('fa-eye').addClass('fa-eye-slash');
+    } else {
+        icon.removeClass('fa-eye-slash').addClass('fa-eye');
+    }
+
+    transaction.data('hidden-from-calculations', transactionDetails.hide_from_calculations);
 }
 
 function setupCategoryMenu() {

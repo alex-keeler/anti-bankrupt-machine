@@ -21,7 +21,7 @@
             {% endfor %}
         </select>
         <select name="year" class="date-change-form__select">
-            {% for year_entry in range(start=current_year - 4, end=current_year + 1) %}
+            {% for year_entry in range(start=year_range_start, end=year_range_end + 1) %}
                 <option value="{{ year_entry }}" {% if year_entry == year %}selected{% endif %}>{{ year_entry }}</option>
             {% endfor %}
         </select>

@@ -60,8 +60,6 @@
   padding: 5px 15px;
   border-radius: 20px;
   height: 2em;
-  margin-left: auto;
-  margin-bottom: 5px;
   font-weight: 700;
   text-align: center;
   display: flex;
@@ -69,6 +67,17 @@
 }
 .transaction-list__category--uncategorized {
   background-color: #fc6238;
+  cursor: pointer;
+}
+.transaction-list__category-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 5px;
+  gap: 5px;
+}
+.transaction-list__hide-from-calculations {
+  color: #555;
   cursor: pointer;
 }
 .transaction-list__category-remove {

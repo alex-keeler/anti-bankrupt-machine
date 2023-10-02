@@ -63,6 +63,7 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
             bank_account_id: bank_account.id.unwrap(),
             category_id: None,
             contribution_budget_id: None,
+            hide_from_calculations: false,
         };
 
         println!("{:?}", record);
