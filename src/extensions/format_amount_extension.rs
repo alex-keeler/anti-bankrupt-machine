@@ -1,8 +1,9 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
+
+use num_format::Locale;
+use num_format::ToFormattedString;
 use rocket_dyn_templates::tera::{from_value, Function, to_value, Value};
 use rocket_dyn_templates::tera::Result;
-use num_format::ToFormattedString;
-use num_format::Locale;
 
 pub fn build() -> impl Function {
     Box::new(move |args: &HashMap<String, Value>| -> Result<Value> {
@@ -17,7 +18,7 @@ pub fn build() -> impl Function {
                         false => format!("${}.{:02}", dollars.to_formatted_string(&Locale::en), cents),
                     };
                     Ok(to_value(formatted_amount).unwrap())
-                },
+                }
                 Err(err) => Err(err.into())
             }
             None => Err("Amount argument not found".into()),

@@ -1,15 +1,14 @@
-use std::collections::HashMap;
 use std::error::Error;
-use chrono::NaiveDate;
+
 use sqlx::MySql;
 use sqlx::pool::PoolConnection;
+
 use crate::models::query::transaction_category_details::TransactionCategoryDetails;
-use crate::models::transaction_categories::{CategoryClassification, TransactionCategory, TransactionCategoryGroup};
+use crate::models::transaction_categories::{CategoryClassification, TransactionCategory};
 use crate::models::users::User;
 use crate::util::date_util;
 
 pub async fn find_all(user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionCategory>, Box<dyn Error>> {
-
     let sql = "\
         SELECT * FROM transaction_category \
         WHERE user_id = ? \
@@ -22,7 +21,6 @@ pub async fn find_all(user: &User, conn: &mut PoolConnection<MySql>) -> Result<V
 }
 
 pub async fn find_by_id(category_id: i64, user: &User, conn: &mut PoolConnection<MySql>) -> Result<TransactionCategory, Box<dyn Error>> {
-
     let sql = "\
         SELECT * FROM transaction_category \
         WHERE id = ? \
@@ -37,7 +35,6 @@ pub async fn find_by_id(category_id: i64, user: &User, conn: &mut PoolConnection
 }
 
 pub async fn get_details_list_for_classification_and_month(classification: CategoryClassification, year: i32, month: u32, user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionCategoryDetails>, Box<dyn Error>> {
-
     let sql = "\
         SELECT tc.id, tc.title, tcg.id AS category_group_id, tcg.title AS category_group_title, \
             CAST(IFNULL(SUM(bt.amount), 0) AS INTEGER) AS total_amount \
