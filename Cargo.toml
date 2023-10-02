@@ -14,7 +14,7 @@ num-format = "0.4.4"
 scraper = "0.17.1"
 
 [dependencies.rocket]
-rocket = "=0.5.0-rc.3"
+version = "=0.5.0-rc.3"
 features = ["secrets", "json"]
 
 [dependencies.rocket_dyn_templates]

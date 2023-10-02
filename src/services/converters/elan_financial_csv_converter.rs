@@ -1,14 +1,12 @@
-use std::collections::HashMap;
 use std::error::Error;
+
 use rocket::fs::TempFile;
-use rocket::http::ContentType;
-use crate::models::bank_accounts::{Bank, BankAccount};
+use sqlx::types::chrono::NaiveDate;
+
+use crate::data::bank_record_report::BankRecordReport;
+use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
 use crate::services::converters::BankRecordConverter;
-use sqlx::types::chrono::NaiveDate;
-use crate::data::bank_record_key::BankRecordKey;
-use crate::data::bank_record_report::BankRecordReport;
-use crate::util::bank_record_util;
 
 pub struct ElanFinancialCsvConverter;
 
@@ -20,7 +18,6 @@ const AMOUNT_FIELD: usize = 4;
 
 impl BankRecordConverter<'_> for ElanFinancialCsvConverter {
     fn convert(&self, file: &TempFile<'_>, bank_account: &BankAccount) -> Result<BankRecordReport, Box<dyn Error>> {
-
         let transactions = parse_data(file, bank_account)?;
 
         if transactions.is_empty() {
@@ -74,7 +71,6 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
 }
 
 fn parse_amount_from_str(amount: &str) -> Result<i32, Box<dyn Error>> {
-
     let amount = amount.replace(",", "")
         .replace(".", "")
         .trim()

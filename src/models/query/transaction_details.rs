@@ -1,9 +1,8 @@
 use chrono::NaiveDate;
+use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use serde::{Serialize, Deserialize};
-use crate::models::bank_accounts::BankAccount;
-use crate::models::bank_transactions::BankTransaction;
-use crate::models::transaction_categories::{CategoryClassification, TransactionCategory, TransactionCategoryGroup};
+
+use crate::models::transaction_categories::CategoryClassification;
 
 #[derive(Debug, FromRow, Serialize, Deserialize)]
 pub struct TransactionDetails {

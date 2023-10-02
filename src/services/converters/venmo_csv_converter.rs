@@ -1,14 +1,12 @@
-use std::collections::HashMap;
 use std::error::Error;
+
 use rocket::fs::TempFile;
-use rocket::http::ContentType;
-use crate::models::bank_accounts::{Bank, BankAccount};
+use sqlx::types::chrono::NaiveDate;
+
+use crate::data::bank_record_report::BankRecordReport;
+use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
 use crate::services::converters::BankRecordConverter;
-use sqlx::types::chrono::NaiveDate;
-use crate::data::bank_record_key::BankRecordKey;
-use crate::data::bank_record_report::BankRecordReport;
-use crate::util::bank_record_util;
 
 pub struct VenmoCsvConverter;
 
@@ -36,7 +34,6 @@ const AMOUNT_FIELD: usize = 8;
 
 impl BankRecordConverter<'_> for VenmoCsvConverter {
     fn convert(&self, file: &TempFile<'_>, bank_account: &BankAccount) -> Result<BankRecordReport, Box<dyn Error>> {
-
         let transactions = parse_data(file, bank_account)?;
 
         if transactions.is_empty() {
@@ -70,7 +67,6 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
     }
 
     for record in &records[3..records.len() - 1] {
-
         let date = NaiveDate::parse_from_str(record.get(DATETIME_FIELD).ok_or("could not get date field").unwrap(), "%Y-%m-%dT%H:%M:%S").unwrap();
         let title = record.get(TITLE_FIELD).ok_or("could not get title field").unwrap().trim();
         let payment_type = record.get(PAYMENT_TYPE_FIELD).ok_or("could not get payment type field").unwrap().trim();
@@ -101,9 +97,8 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
 }
 
 fn parse_amount_from_str(amount: &str) -> Result<i32, Box<dyn Error>> {
-
     let amount = amount.replace("$", "")
-        .replace("+","")
+        .replace("+", "")
         .replace(" ", "")
         .replace(",", "")
         .replace(".", "")

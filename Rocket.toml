@@ -1,2 +1,5 @@
 [default.databases.budgetmanager]
 url = "mysql://budgetuser:keepmeoutofbankruptcy@localhost:3306/budgetmanager?useSSL=false"
+
+[default]
+secret_key = "Tf/8EyYczZrUZSRZXvV7bouJeBSmFEYmEUmMTbedRlux7kJqeAPdgLQjbNupH/koB8CphcHAjVrh2vrq7H9JGg=="

@@ -1,7 +1,8 @@
 use std::error::Error;
-use chrono::NaiveDate;
+
 use sqlx::{MySql, Row};
 use sqlx::pool::PoolConnection;
+
 use crate::models::budget::Budget;
 use crate::models::query::budget_details::BudgetDetails;
 use crate::models::transaction_categories::CategoryClassification;
@@ -9,7 +10,6 @@ use crate::models::users::User;
 use crate::util::date_util;
 
 pub async fn find_by_id(id: i64, conn: &mut PoolConnection<MySql>) -> Result<Budget, Box<dyn Error>> {
-
     let sql = "\
             SELECT b.* FROM budget b \
             WHERE b.id = ? \
@@ -24,7 +24,6 @@ pub async fn find_by_id(id: i64, conn: &mut PoolConnection<MySql>) -> Result<Bud
 }
 
 pub async fn get_details_list_for_user_and_month(user: &User, year: i32, month: u32, conn: &mut PoolConnection<MySql>) -> Result<Vec<BudgetDetails>, Box<dyn Error>> {
-
     let sql = "\
             SELECT b.id, b.title, b.classification, b.budget_type, bh.amount, bh.time_months, \
                 CAST(TIMESTAMPDIFF(MONTH, ?, DATE_ADD(bh.payment_date, INTERVAL \
@@ -89,7 +88,6 @@ pub async fn get_details_list_for_user_and_month(user: &User, year: i32, month: 
 }
 
 pub async fn get_amount_spent_unbudgeted_for_user_and_month(user: &User, year: i32, month: u32, conn: &mut PoolConnection<MySql>) -> Result<i32, Box<dyn Error>> {
-
     let sql = "\
             SELECT CAST(IFNULL(-1 * SUM(bt.amount), 0) AS INT) AS amount_spent \
             FROM bank_transaction bt \
@@ -124,7 +122,6 @@ pub async fn get_amount_spent_unbudgeted_for_user_and_month(user: &User, year: i
 }
 
 pub async fn find_all_by_classification(classification: CategoryClassification, user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<Budget>, Box<dyn Error>> {
-
     let sql = "\
             SELECT b.* FROM budget b
                 JOIN users u on u.id = b.user_id
@@ -141,7 +138,6 @@ pub async fn find_all_by_classification(classification: CategoryClassification, 
 }
 
 pub async fn find_all_financeable(user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<Budget>, Box<dyn Error>> {
-
     let sql = "\
             SELECT b.* FROM budget b
                 JOIN users u on u.id = b.user_id
