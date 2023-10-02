@@ -10,6 +10,7 @@
         {% block scripts %}
             <script type="text/javascript" src="static/javascript/lib/jquery-3.5.1.min.js"></script>
             <script type="text/javascript" src="static/javascript/lib/font-awesome.min.js"></script>
+            <script type="text/javascript" src="static/javascript/lib/chart.umd.js"></script>
         {% endblock %}
     </head>
     <body>

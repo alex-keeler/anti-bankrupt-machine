@@ -4,4 +4,5 @@ grass static/css/modules/modules.scss -- static/css/compiled/modules.css
 grass static/css/pages/login.scss -- static/css/compiled/login.css
 grass static/css/pages/transaction-dashboard.scss -- static/css/compiled/transaction-dashboard.css
 grass static/css/pages/budget-dashboard.scss -- static/css/compiled/budget-dashboard.css
+grass static/css/pages/cash-flow-dashboard.scss -- static/css/compiled/cash-flow-dashboard.css
 echo "Completed 'scss' compile"

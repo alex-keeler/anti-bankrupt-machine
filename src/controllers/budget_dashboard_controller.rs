@@ -5,11 +5,7 @@ use crate::models::budget::BudgetType;
 use crate::models::DB;
 use crate::models::users::User;
 use crate::services::budget_service;
-
-const MONTH_RANGE: [(&str, i32); 12] = [
-    ("January", 1), ("February", 2), ("March", 3), ("April", 4), ("May", 5), ("June", 6),
-    ("July", 7), ("August", 8), ("September", 9), ("October", 10), ("November", 11), ("December", 12)
-];
+use crate::util::date_util;
 
 #[get("/secure/budget/dashboard?<year>&<month>")]
 pub async fn get_dashboard(year: Option<i32>, month: Option<u32>, user: User, mut conn: Connection<DB>) -> Template {
@@ -30,5 +26,6 @@ pub async fn get_dashboard(year: Option<i32>, month: Option<u32>, user: User, mu
     }
     
     Template::render("pages/budget-dashboard", context! { budget_details_list, year, month,
-        current_year: current_date.year(), month_range: MONTH_RANGE, variable_spent, variable_budgeted })
+        year_range_start: current_date.year() - 2, year_range_end: current_date.year() + 2,
+        month_range: date_util::get_months(), variable_spent, variable_budgeted })
 }

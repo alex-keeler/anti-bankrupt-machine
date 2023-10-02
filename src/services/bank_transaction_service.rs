@@ -9,10 +9,11 @@ use crate::data::bank_record_key::BankRecordKey;
 use crate::data::bank_record_report::BankRecordReport;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
+use crate::models::query::transaction_category_details::TransactionCategoryDetails;
 use crate::models::query::transaction_category_select::{TransactionCategoryGroupSelect, TransactionCategorySelect};
 use crate::models::query::transaction_details::TransactionDetails;
 use crate::models::query::transaction_group::TransactionGroup;
-use crate::models::transaction_categories::{TransactionCategory, TransactionCategoryGroup};
+use crate::models::transaction_categories::{CategoryClassification, TransactionCategory, TransactionCategoryGroup};
 use crate::models::users::User;
 use crate::repositories::{bank_transaction_repository, budget_repository, transaction_category_group_repository, transaction_category_repository};
 use crate::services::converters::BankRecordConverterFactory;
@@ -152,6 +153,17 @@ pub async fn set_transaction_comment(transaction_id: i64, comment: Option<String
     Ok(result)
 }
 
+pub async fn set_transaction_hide_from_calculations(transaction_id: i64, hide_from_calculations: bool, user: &User, conn: &mut PoolConnection<MySql>) -> Result<(), Box<dyn Error>> {
+
+    let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
+
+    let mut txn = conn.begin().await?;
+    let result = bank_transaction_repository::set_hide_from_calculations(transaction, hide_from_calculations, &mut txn).await?;
+    txn.commit().await?;
+
+    Ok(result)
+}
+
 pub async fn set_transaction_contribution_budget(transaction_id: i64, budget_id: Option<i64>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<(), Box<dyn Error>> {
 
     let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
@@ -166,4 +178,8 @@ pub async fn set_transaction_contribution_budget(transaction_id: i64, budget_id:
 pub async fn get_top_transaction_groups_by_budget_id(budget_id: i64, limit: i32, begin_date: Option<NaiveDate>, end_date: Option<NaiveDate>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionGroup>, Box<dyn Error>> {
     let budget = budget_repository::find_by_id(budget_id, conn).await?;
     bank_transaction_repository::get_top_transaction_groups_for_budget(budget, limit, begin_date, end_date, user, conn).await
+}
+
+pub async fn get_transaction_category_details_list_by_classification_and_month(classification: CategoryClassification, year: i32, month: u32, user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionCategoryDetails>, Box<dyn Error>> {
+    transaction_category_repository::get_details_list_for_classification_and_month(classification, year, month, user, conn).await
 }

@@ -17,7 +17,7 @@ $(document).ready(function() {
         transactionDetailsContainer.show();
         transactionDetailsContainer.empty().append('<i class="fa-solid fa-spinner fa-spin"></i>');
 
-        $.get('/secure/api/transaction-group/top-by-budget/' + budgetId + '/5/' + window._year + '/' + window._month, function(transactionGroups) {
+        $.get('/secure/api/transaction-group/top-by-budget/' + budgetId + '/1000/' + window._year + '/' + window._month, function(transactionGroups) {
             console.log(transactionGroups);
 
             let list = $('<ul class="transaction-details__list"></ul>');

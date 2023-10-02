@@ -12,6 +12,9 @@ pub struct BudgetDetails {
     pub amount: i32,
     pub time_months: u32,
     pub months_until_payment: u32,
+    pub amount_monthly: i32,
     pub amount_spent: i32,
     pub amount_contributed: i32,
+    pub amount_spent_month: i32,
+    pub amount_contributed_month: i32,
 }

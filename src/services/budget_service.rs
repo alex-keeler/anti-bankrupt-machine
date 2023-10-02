@@ -19,3 +19,7 @@ pub async fn find_all_budgets_by_classification(classification: CategoryClassifi
 pub async fn find_all_financeable_budgets(user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<Budget>, Box<dyn Error>> {
     budget_repository::find_all_financeable(user, conn).await
 }
+
+pub async fn get_amount_spent_unbudgeted_for_user_and_month(user: &User, year: i32, month: u32, conn: &mut PoolConnection<MySql>) -> Result<i32, Box<dyn Error>> {
+    budget_repository::get_amount_spent_unbudgeted_for_user_and_month(user, year, month, conn).await
+}

@@ -9,7 +9,7 @@
     <h1>Transaction Dashboard</h1>
     <ul class="transaction-list list">
         {% for transaction in transaction_details_list %}
-            <li class="transaction-list__entry list__item" data-id="{{ transaction.id }}">
+            <li class="transaction-list__entry list__item" data-id="{{ transaction.id }}" data-hidden-from-calculations="{{ transaction.hide_from_calculations }}">
                 <div class="transaction-list__date">{{ transaction.date }}</div>
                 {% if transaction.amount < 0 %}
                     <div class="transaction-list__amount transaction-list__amount--negative">{{ format_amount(amount=transaction.amount) }}</div>
@@ -30,26 +30,35 @@
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column;">
-                    {% if transaction.category_title %}
-                        <div class="transaction-list__category" data-type="category">
-                            <span>{{ transaction.category_title }}</span>
-                            <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
-                        </div>
-                    {% elif transaction.contribution_budget_title %}
-                        <div class="transaction-list__category" data-type="budget">
-                            {% if transaction.contribution_budget_classification == 'Savings' %}
-                                <span>Savings - {{ transaction.contribution_budget_title }}</span>
-                                <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
+                    <div class="transaction-list__category-container">
+                        <div class="transaction-list__hide-from-calculations">
+                            {% if transaction.hide_from_calculations %}
+                                <i class="fa-solid fa-eye-slash"></i>
                             {% else %}
-                                <span>Financing - {{ transaction.contribution_budget_title }}</span>
-                                <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
+                                <i class="fa-solid fa-eye"></i>
                             {% endif %}
                         </div>
-                    {% else %}
-                        <div class="transaction-list__category transaction-list__category--uncategorized">
-                            <span>Uncategorized</span>
-                        </div>
-                    {% endif %}
+                        {% if transaction.category_title %}
+                            <div class="transaction-list__category" data-type="category">
+                                <span>{{ transaction.category_title }}</span>
+                                <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
+                            </div>
+                        {% elif transaction.contribution_budget_title %}
+                            <div class="transaction-list__category" data-type="budget">
+                                {% if transaction.contribution_budget_classification == 'Savings' %}
+                                    <span>Savings - {{ transaction.contribution_budget_title }}</span>
+                                    <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
+                                {% else %}
+                                    <span>Financing - {{ transaction.contribution_budget_title }}</span>
+                                    <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="transaction-list__category transaction-list__category--uncategorized">
+                                <span>Uncategorized</span>
+                            </div>
+                        {% endif %}
+                    </div>
                     <div class="transaction-list__bank-account">{{ transaction.bank_account_title }}</div>
                 </div>
             </li>
