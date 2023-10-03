@@ -1,11 +1,14 @@
-#[macro_use] extern crate rocket;
+#[macro_use]
+extern crate rocket;
 
 use std::path::{Path, PathBuf};
+
 use rocket::{Build, Rocket};
 use rocket::fs::NamedFile;
 use rocket::response::Redirect;
-use rocket_dyn_templates::Template;
 use rocket_db_pools::Database;
+use rocket_dyn_templates::Template;
+
 use crate::models::users::User;
 
 mod controllers;
@@ -56,6 +59,9 @@ fn rocket() -> Rocket<Build> {
             controllers::api::transaction_group_api_controller::get_top_transaction_groups_by_category,
         ])
         .mount("/static", routes![static_files])
+        .register("/", catchers![
+            controllers::catchers::unauthorized_catcher::redirect_or_access_denied,
+        ])
         .attach(Template::custom(|engines| {
             engines.tera.register_function("format_amount", extensions::format_amount_extension::build());
             engines.tera.register_function("min", extensions::minimum_extension::build());
