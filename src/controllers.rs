@@ -6,3 +6,4 @@ pub mod budget_dashboard_controller;
 pub mod cash_flow_dashboard_controller;
 
 pub mod api;
+pub mod catchers;
