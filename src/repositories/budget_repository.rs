@@ -106,7 +106,7 @@ pub async fn get_amount_spent_unbudgeted_for_user_and_month(user: &User, year: i
                     WHERE bcm.category_id = tc.id \
                         AND b.user_id = u.id \
                 ) \
-                AND (tcg.classification IS NULL OR tcg.classification != ?) \
+                AND ((bt.category_id IS NULL AND bt.contribution_budget_id IS NULL) OR tcg.classification != ?) \
     ";
 
     let (begin_date, end_date) = date_util::get_date_range(year, month)?;
