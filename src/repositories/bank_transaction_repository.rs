@@ -237,7 +237,7 @@ pub async fn get_top_transaction_groups_for_budget(budget: Budget, limit: i32, b
                 JOIN users u ON u.id = bau.user_id \
             WHERE b.id = ? \
                 AND u.id = ? \
-                AND bt.hide_from_transactions = FALSE \
+                AND bt.hide_from_calculations = FALSE \
     ");
 
     if let Some(_) = &begin_date {
