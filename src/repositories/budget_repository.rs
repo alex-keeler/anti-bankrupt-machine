@@ -94,19 +94,19 @@ pub async fn get_amount_spent_unbudgeted_for_user_and_month(user: &User, year: i
                 JOIN bank_account ba ON ba.id = bt.bank_account_id \
                 JOIN bank_account_user bau ON bau.bank_account_id = ba.id \
                 JOIN users u ON u.id = bau.user_id \
+                LEFT JOIN transaction_category tc ON tc.id = bt.category_id \
+                LEFT JOIN transaction_category_group tcg ON tcg.id = tc.category_group_id \
             WHERE bt.date >= ? \
                 AND bt.date < ? \
                 AND bt.hide_from_calculations = FALSE \
                 AND u.id = ? \
-            AND NOT EXISTS (
-                SELECT * FROM transaction_category tc \
-                    JOIN budget_category_mapping bcm ON bcm.category_id = tc.id \
-                    JOIN budget b ON b.id = bcm.budget_id \
-                    JOIN transaction_category_group tcg ON tcg.id = tc.category_group_id \
-                WHERE bt.category_id = tc.id \
-                    AND b.user_id = u.id \
-                    AND tcg.classification = ? \
-            ) \
+                AND NOT EXISTS ( \
+                    SELECT * FROM budget_category_mapping bcm \
+                        JOIN budget b ON b.id = bcm.budget_id \
+                    WHERE bcm.category_id = tc.id \
+                        AND b.user_id = u.id \
+                ) \
+                AND (tcg.classification IS NULL OR tcg.classification != ?) \
     ";
 
     let (begin_date, end_date) = date_util::get_date_range(year, month)?;
