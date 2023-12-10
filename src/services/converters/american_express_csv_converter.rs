@@ -3,7 +3,7 @@ use std::error::Error;
 use rocket::fs::TempFile;
 use sqlx::types::chrono::NaiveDate;
 
-use crate::data::bank_record_report::BankRecordReport;
+use crate::models::data::bank_record_report::BankRecordReport;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
 use crate::services::converters::BankRecordConverter;
@@ -57,9 +57,6 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
             comment: None,
             amount,
             bank_account_id: bank_account.id.unwrap(),
-            category_id: None,
-            contribution_budget_id: None,
-            hide_from_calculations: false,
         };
 
         println!("{:?}", record);

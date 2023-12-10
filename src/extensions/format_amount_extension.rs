@@ -11,8 +11,8 @@ pub fn build() -> impl Function {
             Some(value) => match from_value::<i32>(value.clone()) {
                 Ok(amount) => {
                     let negative = amount < 0;
-                    let dollars = (amount / 100).abs();
-                    let cents = (amount % 100).abs();
+                    let dollars = amount.abs() / 100;
+                    let cents = amount.abs() % 100;
                     let formatted_amount = match negative {
                         true => format!("-${}.{:02}", dollars.to_formatted_string(&Locale::en), cents),
                         false => format!("${}.{:02}", dollars.to_formatted_string(&Locale::en), cents),

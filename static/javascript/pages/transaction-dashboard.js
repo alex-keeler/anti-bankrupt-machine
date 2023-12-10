@@ -1,10 +1,10 @@
 $(document).ready(function() {
 
     $('.transaction-list__category').each(function() {
-        setupCategoryElement($(this));
+        setupBudgetMappingElement($(this));
     });
 
-    setupCategoryMenu();
+    setupBudgetMenu();
 
     $('.transaction-list__user-description').each(function() {
         setupUserDescriptionElement($(this));
@@ -19,41 +19,30 @@ $(document).ready(function() {
     })
 });
 
-function setupCategoryElement(categoryElement) {
-    if ($(categoryElement).hasClass('transaction-list__category--uncategorized')) {
-        $(categoryElement).on('mouseenter', function() {
-            openCategorySelectMenu($(this));
+function setupBudgetMappingElement(budgetMappingElement) {
+
+    if ($(budgetMappingElement).hasClass('budget-mapping--none')) {
+        $(budgetMappingElement).on('mouseenter', function() {
+            openBudgetMenu($(this));
         });
 
-        $(categoryElement).on('mouseleave', function() {
-            if ($('#category-select:hover').length == 0) {
-                $('#category-select').hide();
-                $('#category-select').find('.menu').hide();
+        $(budgetMappingElement).on('mouseleave', function() {
+            if ($('#budget-select:hover').length == 0) {
+                $('#budget-select').hide();
+                $('#budget-select').find('.menu').hide();
             }
         });
     } else {
-        $(categoryElement).off('mouseenter');
-        $(categoryElement).off('mouseleave');
+        $(budgetMappingElement).off('mouseenter');
+        $(budgetMappingElement).off('mouseleave');
 
-        $(categoryElement).find('.transaction-list__category-remove').on('click', function() {
-            let category = $(this).parents('.transaction-list__category');
-            let transactionId = $(this).parents('.transaction-list__entry').data('id');
+        $(budgetMappingElement).find('.budget-mapping__remove').on('click', function() {
+            let mapping = $(this).parents('.budget-mapping');
+            let mappingId = $(mapping).data('id');
 
-            switch (category.data('type')) {
-                case "category":
-                    $.post('/secure/api/remove-category/' + transactionId, function(transactionDetails) {
-                        updateCategoryElement(category, transactionDetails);
-                    });
-                    break;
-                case "budget":
-                    $.post('/secure/api/remove-contribution-budget/' + transactionId, function(transactionDetails) {
-                        updateCategoryElement(category, transactionDetails);
-                    });
-                    break;
-                default:
-                    console.error('unknown category type: ', category.data('type'));
-                    break;
-            }
+            $.post('/secure/api/remove-budget-mapping/' + mappingId, function(transactionDetails) {
+                updateBudgetMappingElement(mapping, transactionDetails);
+            });
         });
     }
 }
@@ -198,7 +187,7 @@ function updateHideFromCalculationsElement(hideFromCalculationsElement, transact
     transaction.data('hidden-from-calculations', transactionDetails.hide_from_calculations);
 }
 
-function setupCategoryMenu() {
+function setupBudgetMenu() {
     $('#category-select').on('mouseleave', function() {
         $('#category-select').hide();
         $('#category-select').find('.menu').hide();
@@ -220,7 +209,7 @@ function setupCategoryMenu() {
     });
 }
 
-function openCategorySelectMenu(categoryElement) {
+function openBudgetMenu(categoryElement) {
 
     $('#category-select').css('right', '50px');
     $('#category-select').css('top', ($(categoryElement).position().top + $('#content-container').scrollTop() + $(categoryElement).outerHeight()) + 'px');
@@ -236,12 +225,12 @@ function openCategorySelectMenu(categoryElement) {
         switch ($(this).data('type')) {
             case "category":
                 $.post('/secure/api/set-category/' + transactionId + '/' + categoryId, function(transactionDetails) {
-                    updateCategoryElement(categoryElement, transactionDetails);
+                    updateBudgetMappingElement(categoryElement, transactionDetails);
                 });
                 break;
             case "budget":
                 $.post('/secure/api/set-contribution-budget/' + transactionId + '/' + categoryId, function(transactionDetails) {
-                    updateCategoryElement(categoryElement, transactionDetails);
+                    updateBudgetMappingElement(categoryElement, transactionDetails);
                 });
                 break;
             default:
@@ -251,9 +240,9 @@ function openCategorySelectMenu(categoryElement) {
     });
 }
 
-function updateCategoryElement(categoryElement, transactionDetails) {
-    $('#category-select').hide();
-    $('#category-select').find('.menu').hide();
+function updateBudgetMappingElement(categoryElement, transactionDetails) {
+    $('#budget-select').hide();
+    $('#budget-select').find('.menu').hide();
 
     if (transactionDetails.category_id) {
         categoryElement.removeClass('transaction-list__category--uncategorized');
@@ -278,5 +267,5 @@ function updateCategoryElement(categoryElement, transactionDetails) {
         categoryElement.empty().append(textElem);
     }
 
-    setupCategoryElement(categoryElement);
+    setupBudgetMappingElement(categoryElement);
 }

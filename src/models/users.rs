@@ -11,7 +11,7 @@ pub struct User {
     pub id: Option<i64>,
     pub username: String,
     pub password_hash: String,
-    pub active: bool,
+    pub is_active: bool,
     pub email_address: String,
     pub first_name: String,
     pub last_name: String,
@@ -32,7 +32,12 @@ impl<'r> FromRequest<'r> for User {
                 match Connection::from_request(request).await {
                     Outcome::Success(conn) => {
                         match user_service::find_user_by_id(user_id, conn).await {
-                            Ok(user) => Outcome::Success(user),
+                            Ok(user) => {
+                                match user.is_active {
+                                    true => Outcome::Success(user),
+                                    false => Outcome::Failure((Status::Unauthorized, UserError::InactiveUser)),
+                                }
+                            },
                             Err(_) => Outcome::Failure((Status::Unauthorized, UserError::InvalidAuthToken)),
                         }
                     },
@@ -50,5 +55,6 @@ impl<'r> FromRequest<'r> for User {
 pub enum UserError {
     MissingAuthToken,
     InvalidAuthToken,
-    ConnectionError
+    InactiveUser,
+    ConnectionError,
 }
