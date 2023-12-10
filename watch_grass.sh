@@ -1,1 +1,1 @@
-watchexec --exts scss run_grass.sh
+watchexec --exts scss ./run_grass.sh

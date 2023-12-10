@@ -1,7 +1,7 @@
 use std::error::Error;
 use rocket::fs::TempFile;
 use rocket::http::ContentType;
-use crate::data::bank_record_report::BankRecordReport;
+use crate::models::data::bank_record_report::BankRecordReport;
 use crate::models::bank_accounts::{Bank, BankAccount};
 use elan_financial_csv_converter::ElanFinancialCsvConverter;
 use independent_bank_csv_converter::IndependentBankCsvConverter;

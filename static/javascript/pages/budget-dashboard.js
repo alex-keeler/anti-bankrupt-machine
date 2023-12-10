@@ -78,7 +78,7 @@ $(document).ready(function() {
     function formatAmount(amount) {
 
         let negative = amount < 0;
-        let dollars = Math.abs(Math.floor(amount / 100));
+        let dollars = Math.floor(Math.abs(amount / 100));
         let cents = Math.abs(amount % 100);
 
         let output = negative ? "-$" : "$";

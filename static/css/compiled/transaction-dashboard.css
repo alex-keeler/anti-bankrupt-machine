@@ -53,7 +53,19 @@
   color: #555;
   text-align: right;
 }
-.transaction-list__category {
+.transaction-list__amount {
+  flex: 0 0 100px;
+  margin: 0 20px 0 10px;
+  text-align: right;
+}
+.transaction-list__amount--positive {
+  color: green;
+}
+.transaction-list__amount--negative {
+  color: red;
+}
+
+.budget-mapping {
   font-size: 0.8em;
   background-color: #2189ff;
   color: white;
@@ -65,34 +77,23 @@
   display: flex;
   align-items: center;
 }
-.transaction-list__category--uncategorized {
+.budget-mapping--none {
   background-color: #fc6238;
   cursor: pointer;
 }
-.transaction-list__category-container {
+.budget-mapping__container {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   margin-bottom: 5px;
   gap: 5px;
 }
-.transaction-list__hide-from-calculations {
-  color: #555;
-  cursor: pointer;
-}
-.transaction-list__category-remove {
+.budget-mapping__remove {
   float: right;
   margin-left: 5px;
   cursor: pointer;
 }
-.transaction-list__amount {
-  flex: 0 0 100px;
-  margin: 0 20px 0 10px;
-  text-align: right;
-}
-.transaction-list__amount--positive {
-  color: green;
-}
-.transaction-list__amount--negative {
-  color: red;
+.budget-mapping__add {
+  color: #333;
+  margin-left: 5px;
 }

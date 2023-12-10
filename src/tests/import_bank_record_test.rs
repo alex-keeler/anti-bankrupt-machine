@@ -3,8 +3,8 @@ use std::error::Error;
 
 use chrono::NaiveDate;
 
-use crate::data::bank_record_key::BankRecordKey;
-use crate::data::bank_record_report::BankRecordReport;
+use crate::models::data::bank_record_key::BankRecordKey;
+use crate::models::data::bank_record_report::BankRecordReport;
 use crate::models::bank_transactions::BankTransaction;
 use crate::services::bank_transaction_service;
 use crate::util::{bank_record_util, compare_util};
