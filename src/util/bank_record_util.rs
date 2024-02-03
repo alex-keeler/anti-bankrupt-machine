@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::data::bank_record_key::BankRecordKey;
+use crate::models::data::bank_record_key::BankRecordKey;
 use crate::models::bank_transactions::BankTransaction;
 
 pub fn build_bank_record_transaction_map(transactions: Vec<BankTransaction>) -> HashMap<BankRecordKey, Vec<BankTransaction>> {

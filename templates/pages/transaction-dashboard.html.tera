@@ -8,8 +8,10 @@
 {% block content %}
     <h1>Transaction Dashboard</h1>
     <ul class="transaction-list list">
-        {% for transaction in transaction_details_list %}
-            <li class="transaction-list__entry list__item" data-id="{{ transaction.id }}" data-hidden-from-calculations="{{ transaction.hide_from_calculations }}">
+        {% for transaction_details in transaction_details_list %}
+            {% set transaction = transaction_details.transaction %}
+            {% set budget_mappings = transaction_details.budget_mappings %}
+            <li class="transaction-list__entry list__item" data-id="{{ transaction.id }}" data-amount="{{ transaction.amount }}">
                 <div class="transaction-list__date">{{ transaction.date }}</div>
                 {% if transaction.amount < 0 %}
                     <div class="transaction-list__amount transaction-list__amount--negative">{{ format_amount(amount=transaction.amount) }}</div>
@@ -30,78 +32,49 @@
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column;">
-                    <div class="transaction-list__category-container">
-                        <div class="transaction-list__hide-from-calculations">
-                            {% if transaction.hide_from_calculations %}
-                                <i class="fa-solid fa-eye-slash"></i>
-                            {% else %}
-                                <i class="fa-solid fa-eye"></i>
+                    <div class="budget-mapping__container">
+                        <ul class="budget-mapping__list">
+                            {% for budget_mapping in budget_mappings %}
+                                <li class="budget-mapping" data-id="{{ budget_mapping.id }}" data-behavior="{{ budget_mapping.behavior }}">
+                                    <div class="budget-mapping__behavior"></div>
+                                    <div class="budget-mapping__amount">{{ format_amount(amount=budget_mapping.amount) }}</div>
+                                    <div class="budget-mapping__category">
+                                        <span>{{ budget_mapping.budget_title }}</span>
+                                        <span class="budget-mapping__remove"><i class="fa-solid fa-xmark"></i></span>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                            {% if budget_mappings | length == 0 %}
+                                <li class="budget-mapping budget-mapping--none">
+                                    <div class="budget-mapping__category">
+                                        <span>Uncategorized</span>
+                                    </div>
+                                </li>
                             {% endif %}
+                        </ul>
+                        <div class="budget-mapping__actions">
+                            <div class="budget-mapping__add"><i class="fa-solid fa-plus"></i></div>
+                            <div class="budget-mapping__edit"><i class="fa-solid fa-pen-to-square"></i></div>
+                            <div class="budget-mapping__save"><i class="fa-solid fa-check"></i></div>
                         </div>
-                        {% if transaction.category_title %}
-                            <div class="transaction-list__category" data-type="category">
-                                <span>{{ transaction.category_title }}</span>
-                                <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
-                            </div>
-                        {% elif transaction.contribution_budget_title %}
-                            <div class="transaction-list__category" data-type="budget">
-                                {% if transaction.contribution_budget_classification == 'Savings' %}
-                                    <span>Savings - {{ transaction.contribution_budget_title }}</span>
-                                    <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
-                                {% else %}
-                                    <span>Financing - {{ transaction.contribution_budget_title }}</span>
-                                    <span class="transaction-list__category-remove"><i class="fa-solid fa-xmark"></i></span>
-                                {% endif %}
-                            </div>
-                        {% else %}
-                            <div class="transaction-list__category transaction-list__category--uncategorized">
-                                <span>Uncategorized</span>
-                            </div>
-                        {% endif %}
                     </div>
                     <div class="transaction-list__bank-account">{{ transaction.bank_account_title }}</div>
                 </div>
             </li>
         {% endfor %}
     </ul>
-    <ul id="category-select" class="menu">
-        {% for category_group in category_group_list %}
-            {% if category_group.categories | length == 1 and not category_group.categories[0].title %}
-                <li class="menu__item" data-type="category" data-id="{{ category_group.categories[0].id }}">{{ category_group.title }}</li>
-            {% else %}
-                <li class="menu__item">
-                    <i class="fa-solid fa-caret-left"></i>
-                    {{ category_group.title }}
-                    <ul class="menu">
-                        {% for category in category_group.categories %}
-                            <li class="menu__item" data-type="category" data-id="{{ category.id }}">{{ category.title }} </li>
-                        {% endfor %}
-                    </ul>
-                </li>
-            {% endif %}
+    <ul id="budget-select" class="menu">
+        {% for classification_entry in budgets_by_classification_list %}
+            <li class="menu__item">
+                <i class="fa-solid fa-caret-left"></i>
+                {{ classification_entry.classification }}
+                <ul class="menu">
+                    {% for budget in classification_entry.budgets %}
+                        <li class="menu__item" data-id="{{ budget.id }}">{{ budget.title }} </li>
+                    {% endfor %}
+                </ul>
+            </li>
         {% endfor %}
-        {% if financeable_budgets | length > 0  %}
-            <li class="menu__item">
-                <i class="fa-solid fa-caret-left"></i>
-                Financing
-                <ul class="menu">
-                    {% for budget in financeable_budgets %}
-                        <li class="menu__item" data-type="budget" data-id="{{ budget.id }}">{{ budget.title }} </li>
-                    {% endfor %}
-                </ul>
-            </li>
-        {% endif %}
-        {% if saving_budgets | length > 0  %}
-            <li class="menu__item">
-                <i class="fa-solid fa-caret-left"></i>
-                Saving
-                <ul class="menu">
-                    {% for budget in saving_budgets %}
-                        <li class="menu__item" data-type="budget" data-id="{{ budget.id }}">{{ budget.title }} </li>
-                    {% endfor %}
-                </ul>
-            </li>
-        {% endif %}
     </ul>
 {% endblock %}
 

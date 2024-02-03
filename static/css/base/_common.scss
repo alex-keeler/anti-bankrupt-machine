@@ -6,6 +6,7 @@
 body {
     margin: 0;
     color: #303030;
+    height: 100%;
 }
 
 .centered {
@@ -15,4 +16,16 @@ body {
 .error {
     margin-left: 10px;
     color: red;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
 }

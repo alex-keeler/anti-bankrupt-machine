@@ -1,18 +1,20 @@
 use std::error::Error;
 use rocket::fs::TempFile;
 use rocket::http::ContentType;
-use crate::data::bank_record_report::BankRecordReport;
+use crate::models::data::bank_record_report::BankRecordReport;
 use crate::models::bank_accounts::{Bank, BankAccount};
 use elan_financial_csv_converter::ElanFinancialCsvConverter;
 use independent_bank_csv_converter::IndependentBankCsvConverter;
+use crate::services::converters::american_express_credit_csv_converter::AmericanExpressCreditCsvConverter;
 use crate::services::converters::venmo_csv_converter::VenmoCsvConverter;
-use crate::services::converters::american_express_csv_converter::AmericanExpressCsvConverter;
+use crate::services::converters::american_express_savings_csv_converter::AmericanExpressSavingsCsvConverter;
 use crate::services::factories::Factory;
 
 pub mod independent_bank_csv_converter;
 pub mod elan_financial_csv_converter;
 pub mod venmo_csv_converter;
-pub mod american_express_csv_converter;
+pub mod american_express_savings_csv_converter;
+pub mod american_express_credit_csv_converter;
 
 pub trait BankRecordConverter<'a> {
     fn convert(&self, file: &TempFile<'_>, bank_account: &BankAccount) -> Result<BankRecordReport, Box<dyn Error>>;
@@ -47,9 +49,15 @@ impl<'a, 'b> Factory<(&'a Bank, &'b TempFile<'_>), Box<dyn BankRecordConverter<'
                 }
                 None
             }
-            Bank::AmericanExpress => {
+            Bank::AmericanExpressSavings => {
                 if content_type == &ContentType::CSV {
-                    return Some(Box::new(AmericanExpressCsvConverter));
+                    return Some(Box::new(AmericanExpressSavingsCsvConverter));
+                }
+                None
+            }
+            Bank::AmericanExpressCredit => {
+                if content_type == &ContentType::CSV {
+                    return Some(Box::new(AmericanExpressCreditCsvConverter));
                 }
                 None
             }

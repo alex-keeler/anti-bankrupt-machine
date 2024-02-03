@@ -1,26 +1,32 @@
-use std::collections::HashMap;
 use std::error::Error;
 
 use chrono::NaiveDate;
+use num_format::Locale::tr;
 use rocket::fs::TempFile;
+use rocket_db_pools::Pool;
 use sqlx::{Acquire, MySql};
 use sqlx::pool::PoolConnection;
+use crate::models::data::application_error::ApplicationError;
 
-use crate::data::bank_record_report::BankRecordReport;
+use crate::models::data::bank_record_report::BankRecordReport;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
-use crate::models::query::transaction_category_details::TransactionCategoryDetails;
-use crate::models::query::transaction_category_select::{TransactionCategoryGroupSelect, TransactionCategorySelect};
+use crate::models::budget_transaction_mapping::{BudgetTransactionMapping, TransactionBehavior};
+use crate::models::data::application_error::ApplicationError::ServiceError;
+use crate::models::data::full_transaction_details::FullTransactionDetails;
+use crate::models::query::budget_transaction_mapping_details::BudgetTransactionMappingDetails;
 use crate::models::query::transaction_details::TransactionDetails;
 use crate::models::query::transaction_group::TransactionGroup;
-use crate::models::transaction_categories::CategoryClassification;
 use crate::models::users::User;
-use crate::repositories::{bank_transaction_repository, budget_repository, transaction_category_group_repository, transaction_category_repository};
+use crate::repositories::{bank_transaction_repository, budget_repository, budget_transaction_mapping_repository};
 use crate::services::converters::BankRecordConverterFactory;
 use crate::services::factories::Factory;
-use crate::util::bank_record_util;
+use crate::util::{bank_record_util, date_util};
 
-pub async fn import_bank_record_file(file: &TempFile<'_>, _user: User, bank_account: BankAccount, conn: &mut PoolConnection<MySql>) -> Result<(), Box<dyn Error>> {
+pub async fn import_bank_record_file(
+    file: &TempFile<'_>, _user: User, bank_account: BankAccount, conn: &mut PoolConnection<MySql>
+) -> Result<(), Box<dyn Error>> {
+
     let report = BankRecordConverterFactory::get_instance((&bank_account.bank, file))
         .ok_or("no supporting handler found")?
         .convert(file, &bank_account)?;
@@ -54,7 +60,10 @@ pub fn validate_bank_record_report(report: &BankRecordReport) -> Result<(), Box<
     Ok(())
 }
 
-pub fn find_bank_transactions_to_add(report: BankRecordReport, existing_transactions: Vec<BankTransaction>) -> Vec<BankTransaction> {
+pub fn find_bank_transactions_to_add(
+    report: BankRecordReport, existing_transactions: Vec<BankTransaction>
+) -> Vec<BankTransaction> {
+
     let mut transactions_to_add = Vec::new();
 
     let new_transaction_map = bank_record_util::build_bank_record_transaction_map(report.transactions);
@@ -73,59 +82,39 @@ pub fn find_bank_transactions_to_add(report: BankRecordReport, existing_transact
     transactions_to_add
 }
 
-pub async fn get_transaction_details_by_user(user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionDetails>, Box<dyn Error>> {
-    bank_transaction_repository::get_transaction_details_by_user(user, conn).await
+pub async fn get_full_transaction_details_by_user(
+    user: &User, conn: &mut PoolConnection<MySql>
+) -> Result<Vec<FullTransactionDetails>, ApplicationError> {
+
+    let transaction_details_list = bank_transaction_repository::get_transaction_details_by_user(user, conn).await?;
+
+    let mut full_transaction_details_list = Vec::with_capacity(transaction_details_list.len());
+    for transaction in transaction_details_list {
+        let budget_mappings =
+            budget_transaction_mapping_repository::get_details_by_transaction_id(
+                transaction.id, conn).await?;
+        full_transaction_details_list.push(FullTransactionDetails {
+            transaction,
+            budget_mappings,
+        })
+    }
+
+    Ok(full_transaction_details_list)
 }
 
-pub async fn get_transaction_details_by_id(transaction_id: i64, user: &User, conn: &mut PoolConnection<MySql>) -> Result<TransactionDetails, Box<dyn Error>> {
+pub async fn get_transaction_details_by_id(
+    transaction_id: i64, user: &User, conn: &mut PoolConnection<MySql>
+) -> Result<TransactionDetails, Box<dyn Error>> {
+
     bank_transaction_repository::get_transaction_details_by_id(transaction_id, user, conn).await
+        .map_err(|e| e.into_database_error().unwrap().into())
 }
 
-pub async fn get_transaction_category_group_select_list(user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionCategoryGroupSelect>, Box<dyn Error>> {
-    let category_list = transaction_category_repository::find_all(user, conn).await?;
-    let category_group_list = transaction_category_group_repository::find_all(conn).await?;
+pub async fn set_transaction_user_description(
+    transaction_id: i64, user_description: Option<String>, user: &User,
+    conn: &mut PoolConnection<MySql>
+) -> Result<(), Box<dyn Error>> {
 
-    let mut category_select_map = HashMap::new();
-    for category in category_list {
-        let category_select = TransactionCategorySelect {
-            id: category.id.unwrap(),
-            title: category.title,
-        };
-        category_select_map
-            .entry(category.category_group_id)
-            .or_insert(Vec::new())
-            .push(category_select);
-    }
-
-    let mut category_group_select_list = Vec::with_capacity(category_group_list.len());
-    for category_group in category_group_list {
-        let category_group_select = TransactionCategoryGroupSelect {
-            id: category_group.id.unwrap(),
-            title: category_group.title,
-            classification: category_group.classification,
-            categories: category_select_map.remove(&category_group.id.unwrap()).unwrap_or(Vec::new()),
-        };
-
-        if !category_group_select.categories.is_empty() {
-            category_group_select_list.push(category_group_select);
-        }
-    }
-
-    Ok(category_group_select_list)
-}
-
-pub async fn set_transaction_category(transaction_id: i64, category_id: Option<i64>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<(), Box<dyn Error>> {
-    let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
-    let category = if category_id.is_some() { Some(transaction_category_repository::find_by_id(category_id.unwrap(), user, conn).await?) } else { None };
-
-    let mut txn = conn.begin().await?;
-    let result = bank_transaction_repository::set_category(transaction, category, &mut txn).await?;
-    txn.commit().await?;
-
-    Ok(result)
-}
-
-pub async fn set_transaction_user_description(transaction_id: i64, user_description: Option<String>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<(), Box<dyn Error>> {
     let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
 
     let mut txn = conn.begin().await?;
@@ -135,7 +124,10 @@ pub async fn set_transaction_user_description(transaction_id: i64, user_descript
     Ok(result)
 }
 
-pub async fn set_transaction_comment(transaction_id: i64, comment: Option<String>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<(), Box<dyn Error>> {
+pub async fn set_transaction_comment(
+    transaction_id: i64, comment: Option<String>, user: &User, conn: &mut PoolConnection<MySql>
+) -> Result<(), Box<dyn Error>> {
+
     let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
 
     let mut txn = conn.begin().await?;
@@ -145,31 +137,82 @@ pub async fn set_transaction_comment(transaction_id: i64, comment: Option<String
     Ok(result)
 }
 
-pub async fn set_transaction_hide_from_calculations(transaction_id: i64, hide_from_calculations: bool, user: &User, conn: &mut PoolConnection<MySql>) -> Result<(), Box<dyn Error>> {
-    let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
+pub async fn get_top_transaction_groups_by_budget_id(
+    budget_id: i64, limit: i32, begin_date: Option<NaiveDate>, end_date: Option<NaiveDate>,
+    user: &User, conn: &mut PoolConnection<MySql>
+) -> Result<Vec<TransactionGroup>, ApplicationError> {
+
+    let budget = budget_repository::find_by_id(budget_id, &user, conn).await?;
+
+    Ok(bank_transaction_repository::get_top_transaction_groups_for_budget(
+        budget, limit, begin_date, end_date, user, conn).await?)
+}
+
+pub async fn get_amount_spent_unbudgeted_for_user_and_month(
+    user: &User, year: i32, month: u32, conn: &mut PoolConnection<MySql>
+) -> Result<i32, Box<dyn Error>> {
+
+    let (begin_date, end_date) = date_util::get_date_range(year, month)?;
+
+    bank_transaction_repository::get_amount_spent_unbudgeted_for_user_and_time_period(
+        user, begin_date, end_date, conn).await
+        .map_err(|e| e.into_database_error().unwrap().into())
+}
+
+pub async fn get_budget_transaction_mapping_details_by_id(
+    budget_transaction_mapping_id: i64, user: &User, conn: &mut PoolConnection<MySql>
+) -> Result<BudgetTransactionMappingDetails, ApplicationError> {
+
+    let mapping_details =
+        budget_transaction_mapping_repository::get_details_by_id(
+            budget_transaction_mapping_id, user, conn).await?;
+
+    Ok(mapping_details)
+}
+
+pub async fn add_budget_transaction_mapping(
+    transaction_id: i64, budget_id: i64, user: &User, amount: i32, behavior: TransactionBehavior,
+    conn: &mut PoolConnection<MySql>
+) -> Result<i64, ApplicationError> {
+
+    let transaction = bank_transaction_repository::find_editable_transaction_by_id(
+        transaction_id, user, conn).await?;
+    let budget = budget_repository::find_by_id(budget_id, user, conn).await?;
 
     let mut txn = conn.begin().await?;
-    let result = bank_transaction_repository::set_hide_from_calculations(transaction, hide_from_calculations, &mut txn).await?;
+
+    let mapping = budget_transaction_mapping_repository::insert(
+        transaction, budget, amount, behavior, &mut txn).await?;
+
     txn.commit().await?;
 
-    Ok(result)
+    Ok(mapping)
 }
 
-pub async fn set_transaction_contribution_budget(transaction_id: i64, budget_id: Option<i64>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<(), Box<dyn Error>> {
-    let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
+pub async fn update_budget_transaction_mapping(
+    budget_transaction_mapping_id: i64, user: &User, amount: i32, behavior: TransactionBehavior,
+    conn: &mut PoolConnection<MySql>
+) -> Result<(), ApplicationError> {
+
+    let budget_transaction_mapping = budget_transaction_mapping_repository::find_editable_mapping_by_id(budget_transaction_mapping_id, user, conn).await?;
 
     let mut txn = conn.begin().await?;
-    let result = bank_transaction_repository::set_contribution_budget(transaction, budget_id, &mut txn).await?;
+
+    budget_transaction_mapping_repository::update(budget_transaction_mapping, amount, behavior, &mut txn).await?;
+
     txn.commit().await?;
 
-    Ok(result)
+    Ok(())
 }
 
-pub async fn get_top_transaction_groups_by_budget_id(budget_id: i64, limit: i32, begin_date: Option<NaiveDate>, end_date: Option<NaiveDate>, user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionGroup>, Box<dyn Error>> {
-    let budget = budget_repository::find_by_id(budget_id, conn).await?;
-    bank_transaction_repository::get_top_transaction_groups_for_budget(budget, limit, begin_date, end_date, user, conn).await
-}
+pub async fn remove_budget_transaction_mapping(
+    budget_transaction_mapping_id: i64, user: &User, conn: &mut PoolConnection<MySql>
+) -> Result<(), ApplicationError> {
 
-pub async fn get_transaction_category_details_list_by_classification_and_month(classification: CategoryClassification, year: i32, month: u32, user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<TransactionCategoryDetails>, Box<dyn Error>> {
-    transaction_category_repository::get_details_list_for_classification_and_month(classification, year, month, user, conn).await
+    let budget_transaction_mapping = budget_transaction_mapping_repository::find_editable_mapping_by_id(budget_transaction_mapping_id, user, conn).await?;
+
+    let mut txn = conn.begin().await?;
+    budget_transaction_mapping_repository::remove(budget_transaction_mapping, user, &mut txn).await?;
+    txn.commit().await?;
+    Ok(())
 }

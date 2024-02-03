@@ -1,7 +1,8 @@
 use chrono::Datelike;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::{context, Template};
-use crate::models::budget::BudgetType;
+use crate::models::data::application_error::ApplicationError;
+use crate::models::budget::SpendingType;
 use crate::models::DB;
 use crate::models::users::User;
 use crate::services::budget_service;
@@ -14,18 +15,20 @@ pub async fn get_dashboard(year: Option<i32>, month: Option<u32>, user: User, mu
     let year = year.unwrap_or(current_date.year());
     let month = month.unwrap_or(current_date.month());
 
-    let budget_details_list = budget_service::get_budget_details_list_by_user_and_month(&user, year, month, &mut *conn).await.unwrap();
+    let budget_state_list = budget_service::find_budget_states_by_user_and_month(&user, year, month, &mut *conn).await.unwrap();
 
     let mut variable_spent = 0;
     let mut variable_budgeted = 0;
-    for budget in &budget_details_list {
-        if matches!(budget.budget_type, BudgetType::Variable) && budget.months_until_payment == 0 {
-            variable_spent += budget.amount_spent;
-            variable_budgeted += budget.amount;
+
+    for budget_state in &budget_state_list {
+        println!("{:?}", budget_state);
+        if matches!(budget_state.spending_type, SpendingType::Variable) {
+            variable_spent += budget_state.amount_spent_this_month;
+            variable_budgeted += budget_state.amount_monthly;
         }
     }
-    
-    Template::render("pages/budget-dashboard", context! { budget_details_list, year, month,
+
+    Template::render("pages/budget-dashboard", context! { budget_state_list, year, month,
         year_range_start: current_date.year() - 2, year_range_end: current_date.year() + 2,
         month_range: date_util::get_months(), variable_spent, variable_budgeted })
 }

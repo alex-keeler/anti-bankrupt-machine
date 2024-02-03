@@ -6,7 +6,8 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Budget Dashboard -
+    <h1>
+        Budget Dashboard -
         {% for month_entry in month_range %}
             {% if month_entry.1 == month %}
                 {{ month_entry.0 }}
@@ -49,17 +50,17 @@
                 {% endif %}
             </div>
         </div>
-        {% if budget_details_list | length > 0 %}
+        {% if budget_state_list | length > 0 %}
             <div class="classification-select__container">
                 <div class="classification-select">
                     <div class="classification-select__entry classification-select__entry--selected" data-classification="wants">Wants</div>
                     <div class="classification-select__entry" data-classification="needs">Needs</div>
                     <div class="classification-select__entry" data-classification="savings">Savings</div>
+                    <div class="classification-select__entry" data-classification="income">Income</div>
                 </div>
             </div>
         {% endif %}
-        {% for budget in budget_details_list %}
-            {% set amount_monthly = budget.amount / budget.time_months | round(method='ceil') | int %}
+        {% for budget in budget_state_list %}
 
             {% if budget.classification == 'Needs' %}
                 {% set budget_class = "budget--needs" %}
@@ -67,44 +68,43 @@
                 {% set budget_class = "budget--wants" %}
             {% elif budget.classification == 'Savings' %}
                 {% set budget_class = "budget--savings" %}
+            {% elif budget.classification == 'Income' %}
+                {% set budget_class = "budget--income" %}
             {% endif %}
 
             <div class="well budget {{ budget_class }}" style="display: none;" data-id="{{ budget.id }}">
                 <div class="budget__title">{{ budget.title }}</div>
                 <div class="budget__details">
                     <div class="budget__spent">
-                        {% if budget.months_until_payment == 0 and budget.classification != 'Savings' %}
-                            {{ format_amount(amount=budget.amount_spent) }} / {{ format_amount(amount=budget.amount) }}
-                            {% if budget.amount > 0 %}
-                                <span class="budget__percentage">({{ budget.amount_spent / budget.amount * 100 | round(method='floor') }}%)</span>
-                                <span class="transaction-details__dropdown"><i class="fa-solid fa-chevron-right"></i></span>
-                            {% else %}
-                                <span class="budget__percentage">(0%)</span>
-                            {% endif %}
+                        {% if budget.amount_spent > 0 %}
+                            {{ format_amount(amount=budget.amount_spent) }} / {{ format_amount(amount=budget.amount_current) }}
+                            <span class="budget__percentage">({{ budget.amount_spent / budget.amount_current * 100 | round(method='floor') }}%)</span>
+                            <span class="transaction-details__dropdown"><i class="fa-solid fa-chevron-right"></i></span>
                         {% else %}
-                            {% set amount_current = amount_monthly * (budget.time_months - budget.months_until_payment) %}
-                            {{ format_amount(amount=budget.amount_contributed) }} / {{ format_amount(amount=amount_current) }}
-                            {% if amount_current > 0 %}
-                                <span class="budget__percentage">({{ budget.amount_contributed / amount_current * 100 | round(method='floor') }}%)</span>
-                            {% else %}
-                                <span class="budget__percentage">(0%)</span>
-                            {% endif %}
+                            {{ format_amount(amount=budget.amount_contributed) }} / {{ format_amount(amount=budget.amount_current) }}
+                            <span class="budget__percentage">(0%)</span>
                         {% endif %}
                     </div>
                     <div class="budget__metadata">
-                        {% if budget.time_months == 1 %}
-                            <div>{{ format_amount(amount=budget.amount) }}/month</div>
+                        {% if not budget.months_until_maturity or budget.months_until_maturity == 1 %}
+                            <div>{{ format_amount(amount=budget.amount_monthly) }} / month</div>
                         {% else %}
-                            <div>{{ format_amount(amount=budget.amount) }} / {{ budget.time_months }} months</div>
-                            <div>({{ format_amount(amount=amount_monthly) }}/month)</div>
+                            <div>{{ format_amount(amount=budget.amount_total) }} / {{ budget.months_until_maturity }} months</div>
+                            <div>({{ format_amount(amount=budget.amount_monthly) }} / month)</div>
                         {% endif %}
                     </div>
                 </div>
                 <div class="transaction-details__container" style="display: none;"></div>
 
-                {% set spent_percentage = budget.amount_spent / budget.amount * 100 %}
-                {% set contributed_percentage = budget.amount_contributed / budget.amount * 100 %}
-                {% set max_percentage = (budget.time_months - budget.months_until_payment) / budget.time_months * 100 %}
+                {% if budget.amount_total %}
+                    {% set amount_total = budget.amount_total %}
+                {% else %}
+                    {% set amount_total = budget.amount_current %}
+                {% endif %}
+
+                {% set spent_percentage = budget.amount_spent / amount_total * 100 %}
+                {% set contributed_percentage = budget.amount_contributed / amount_total * 100 %}
+                {% set max_percentage = budget.amount_current / amount_total * 100 %}
 
                 {% set bar_width = max(l=100, r=max(l=spent_percentage, r=contributed_percentage)) %}
 
@@ -118,7 +118,6 @@
                 {% set total_over_budget_portion = overspent_overcontributed_portion + overspent_portion + overcontributed_portion %}
                 {% set unused_portion = max(l=0, r=max_percentage - total_under_budget_portion) %}
                 {% set non_applicable_portion = max(l=0, r=bar_width - max_percentage - total_over_budget_portion) %}
-
 
                 {% set spent_width = spent_portion / bar_width * 100 %}
                 {% set contributed_width = contributed_portion / bar_width * 100 %}

@@ -1,0 +1,1 @@
+UPDATE budget_history SET start_date = DATE_ADD(start_date, INTERVAL 1 MONTH);

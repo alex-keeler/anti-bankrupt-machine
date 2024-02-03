@@ -1,20 +1,17 @@
+use chrono::NaiveDate;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
-use crate::models::budget::BudgetType;
-use crate::models::transaction_categories::CategoryClassification;
+use crate::models::budget::{BudgetClassification, SpendingType};
 
-#[derive(Debug, FromRow, Serialize, Deserialize)]
+#[derive(Debug, FromRow, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BudgetDetails {
     pub id: i64,
     pub title: String,
-    pub classification: CategoryClassification,
-    pub budget_type: BudgetType,
-    pub amount: i32,
-    pub time_months: u32,
-    pub months_until_payment: u32,
+    pub classification: BudgetClassification,
+    pub spending_type: SpendingType,
+    pub cumulative: bool,
+    pub rollover: bool,
+    pub start_date: NaiveDate,
     pub amount_monthly: i32,
-    pub amount_spent: i32,
-    pub amount_contributed: i32,
-    pub amount_spent_month: i32,
-    pub amount_contributed_month: i32,
+    pub amount_cumulative: i32,
 }
