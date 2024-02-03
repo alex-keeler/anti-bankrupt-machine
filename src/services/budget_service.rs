@@ -27,8 +27,6 @@ pub async fn find_budget_states_by_user_and_month(user: &User, year: i32, month:
         let histories = budget_history_repository::find_applicable_by_budget(
             &budget, &begin_date, &end_date, conn).await?;
 
-        println!("Got {} histories for budget [{}]", histories.len(), budget.title);
-
         if histories.is_empty() {
             continue;
         }
@@ -93,7 +91,6 @@ pub async fn find_budget_states_by_user_and_month(user: &User, year: i32, month:
 
         for transaction_mapping in cycle_transaction_mappings {
             if TransactionBehavior::Contribution.eq(&transaction_mapping.behavior) {
-                println!("{:?}", transaction_mapping);
                 amount_contributed += transaction_mapping.amount;
             } else {
                 amount_spent -= transaction_mapping.amount;

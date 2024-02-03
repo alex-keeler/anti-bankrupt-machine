@@ -20,7 +20,6 @@ pub async fn get_dashboard(year: Option<i32>, month: Option<u32>, user: User, mu
     let mut variable_budgeted = 0;
 
     for budget_state in &budget_state_list {
-        println!("{:?}", budget_state);
         if matches!(budget_state.spending_type, SpendingType::Variable) {
             variable_spent += budget_state.amount_spent_this_month;
             variable_budgeted += budget_state.amount_monthly;
