@@ -1,7 +1,6 @@
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use crate::models::budget_transaction_mapping::TransactionBehavior;
 
 #[derive(Debug, FromRow, Serialize, Deserialize)]
 pub struct TransactionDetails {
