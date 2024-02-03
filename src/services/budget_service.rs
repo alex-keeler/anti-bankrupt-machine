@@ -152,12 +152,15 @@ pub async fn find_budgets_by_user_grouped_by_classification(
 
     let mut budgets_by_classification_list =
         Vec::with_capacity(classification_to_budget_map.len());
+
     for entry in classification_to_budget_map {
         budgets_by_classification_list.push(BudgetsByClassification {
             classification: entry.0,
             budgets: entry.1,
         });
     }
+
+    budgets_by_classification_list.sort_by(|a, b| a.classification.cmp(&b.classification));
 
     Ok(budgets_by_classification_list)
 }

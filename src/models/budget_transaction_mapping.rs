@@ -1,3 +1,4 @@
+use rocket::form::FromFormField;
 use sqlx::{FromRow, Type};
 use serde::{Serialize, Deserialize};
 
@@ -10,7 +11,7 @@ pub struct BudgetTransactionMapping {
     pub behavior: TransactionBehavior,
 }
 
-#[derive(Debug, Type, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Type, Serialize, Deserialize, PartialEq, Eq, Hash, FromFormField)]
 #[repr(i32)]
 pub enum TransactionBehavior {
     Spending = 1,

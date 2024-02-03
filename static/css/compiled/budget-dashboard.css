@@ -78,6 +78,7 @@
   width: auto;
   overflow: hidden;
   background-color: #f6f6f6;
+  user-select: none;
 }
 .classification-select__container {
   display: flex;

@@ -51,7 +51,7 @@ pub async fn insert(
     let sql = "\
         INSERT INTO bank_transaction \
         (date, bank_description, user_description, comment, amount, bank_account_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
     ";
 
     let query = sqlx::query(sql)
@@ -100,18 +100,12 @@ pub async fn get_transaction_details_by_id(
 ) -> Result<TransactionDetails, Error> {
 
     let sql = "\
-            SELECT bt.id, bt.date, bt.bank_description, bt.user_description, bt.comment, bt.amount, bt.hide_from_calculations, \
-                   tc.id AS category_id, IF(tc.title IS NULL, tcg.title, CONCAT(tcg.title, ' - ', tc.title)) AS category_title, \
-                   tcg.classification as category_classification, cb.id AS contribution_budget_id, \
-                   cb.title AS contribution_budget_title, cb.classification AS contribution_budget_classification, \
-                   ba.title AS bank_account_title \
+            SELECT bt.id, bt.date, bt.bank_description, bt.user_description, bt.comment, bt.amount, \
+                ba.title AS bank_account_title \
             FROM bank_transaction bt \
                 JOIN bank_account ba ON ba.id = bt.bank_account_id \
                 JOIN bank_account_user bau ON bau.bank_account_id = ba.id \
                 JOIN users u ON u.id = bau.user_id \
-                LEFT JOIN transaction_category tc ON tc.id = bt.category_id \
-                LEFT JOIN transaction_category_group tcg ON tcg.id = tc.category_group_id \
-                LEFT JOIN budget cb ON cb.id = bt.contribution_budget_id \
             WHERE bt.id = ? \
                 AND u.id = ? \
     ";
@@ -256,8 +250,9 @@ pub async fn get_amount_spent_unbudgeted_for_user_and_time_period(
                 AND bt.date < ? \
                 AND u.id = ? \
                 AND NOT EXISTS ( \
-                    SELECT * FROM budget b \
-                    WHERE bt.budget_id = b.id \
+                    SELECT btm.* FROM budget_transaction_mapping btm \
+                        JOIN budget b ON b.id = btm.budget_id \
+                    WHERE btm.bank_transaction_id = bt.id \
                         AND b.user_id = u.id \
                 ) \
         ";

@@ -70,6 +70,9 @@ $(document).ready(function() {
             case 'savings':
                 $('.budget--savings').show();
                 break;
+            case 'income':
+                $('.budget--income').show();
+                break;
             default:
                 console.error('Unknown classification: ', classification);
         }
