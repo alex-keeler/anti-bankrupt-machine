@@ -1,7 +1,6 @@
 use std::error::Error;
 
 use chrono::NaiveDate;
-use num_format::Locale::tr;
 use rocket::fs::TempFile;
 use rocket_db_pools::Pool;
 use sqlx::{Acquire, MySql};
@@ -11,8 +10,7 @@ use crate::models::data::application_error::ApplicationError;
 use crate::models::data::bank_record_report::BankRecordReport;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
-use crate::models::budget_transaction_mapping::{BudgetTransactionMapping, TransactionBehavior};
-use crate::models::data::application_error::ApplicationError::ServiceError;
+use crate::models::budget_transaction_mapping::TransactionBehavior;
 use crate::models::data::full_transaction_details::FullTransactionDetails;
 use crate::models::query::budget_transaction_mapping_details::BudgetTransactionMappingDetails;
 use crate::models::query::transaction_details::TransactionDetails;

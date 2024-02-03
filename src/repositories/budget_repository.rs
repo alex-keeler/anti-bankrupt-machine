@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 use rocket_db_pools::Pool;
 
-use sqlx::{MySql, Error, query_as, Row};
+use sqlx::{MySql, Error, query_as};
 use sqlx::pool::PoolConnection;
 
 use crate::models::budget::Budget;

@@ -6,7 +6,7 @@ use sqlx::MySql;
 use sqlx::pool::PoolConnection;
 use crate::models::data::application_error::ApplicationError;
 
-use crate::models::budget::{Budget, BudgetHistory};
+use crate::models::budget::BudgetHistory;
 use crate::models::budget_transaction_mapping::TransactionBehavior;
 use crate::models::data::budgets_by_classification::BudgetsByClassification;
 use crate::models::query::budget_state::BudgetState;

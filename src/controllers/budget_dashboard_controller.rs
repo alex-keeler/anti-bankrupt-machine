@@ -1,7 +1,6 @@
 use chrono::Datelike;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::{context, Template};
-use crate::models::data::application_error::ApplicationError;
 use crate::models::budget::SpendingType;
 use crate::models::DB;
 use crate::models::users::User;
