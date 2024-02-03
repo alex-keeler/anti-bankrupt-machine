@@ -25,13 +25,14 @@ pub struct BudgetHistory {
     pub recur_count: Option<u32>,
 }
 
-#[derive(Debug, Type, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, Type, Serialize, Deserialize, PartialEq, Eq, Hash, Clone, PartialOrd, Ord)]
 #[repr(i32)]
 pub enum BudgetClassification {
     Needs = 1,
     Savings = 2,
     Wants = 3,
     Income = 4,
+    Internal = 5,
 }
 
 #[derive(Debug, Type, Serialize, Deserialize, PartialEq, Eq)]

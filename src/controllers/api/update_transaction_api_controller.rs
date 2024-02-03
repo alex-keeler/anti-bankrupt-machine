@@ -5,7 +5,7 @@ use crate::models::query::transaction_details::TransactionDetails;
 use crate::models::users::User;
 use crate::services::bank_transaction_service;
 
-#[post("/secure/api/set-user-description/<transaction_id>", data="<user_description>")]
+#[post("/secure/api/transaction/set-user-description/<transaction_id>", data="<user_description>")]
 pub async fn set_user_description(transaction_id: i64, mut user_description: Option<String>, user: User, mut conn: Connection<DB>) -> Json<TransactionDetails> {
 
     if user_description.is_some() && user_description.as_ref().unwrap().is_empty() {
@@ -17,7 +17,7 @@ pub async fn set_user_description(transaction_id: i64, mut user_description: Opt
     Json(transaction_details)
 }
 
-#[post("/secure/api/set-comment/<transaction_id>", data="<comment>")]
+#[post("/secure/api/transaction/set-comment/<transaction_id>", data="<comment>")]
 pub async fn set_comment(transaction_id: i64, mut comment: Option<String>, user: User, mut conn: Connection<DB>) -> Json<TransactionDetails> {
 
     if comment.is_some() && comment.as_ref().unwrap().is_empty() {

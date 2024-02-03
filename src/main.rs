@@ -9,8 +9,8 @@ use rocket::fs::NamedFile;
 use rocket::response::Redirect;
 use rocket_db_pools::Database;
 use rocket_dyn_templates::Template;
-use crate::models::DB;
 
+use crate::models::DB;
 use crate::models::users::User;
 
 mod controllers;
@@ -53,6 +53,9 @@ fn rocket() -> Rocket<Build> {
             controllers::api::update_transaction_api_controller::set_comment,
             controllers::api::cash_flow_api_controller::get_cash_flow_data,
             controllers::api::transaction_group_api_controller::get_top_transaction_groups_by_category,
+            controllers::api::update_budget_transaction_mapping_api_controller::add_budget_transaction_mapping,
+            controllers::api::update_budget_transaction_mapping_api_controller::remove_budget_transaction_mapping,
+            controllers::api::update_budget_transaction_mapping_api_controller::update_budget_transaction_mapping,
         ])
         .mount("/static", routes![static_files])
         .register("/", catchers![
@@ -68,9 +71,13 @@ fn rocket() -> Rocket<Build> {
 }
 
 async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
+    println!("Running migrations...");
     match DB::fetch(&rocket) {
         Some(db) => match sqlx::migrate!("./migrations").run(&**db).await {
-            Ok(_) => Ok(rocket),
+            Ok(_) => {
+                println!("Successfully ran migrations");
+                Ok(rocket)
+            }
             Err(e) => {
                 error!("Failed to initialize SQLx database: {}", e);
                 Err(rocket)

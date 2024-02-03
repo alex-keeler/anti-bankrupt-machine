@@ -67,19 +67,11 @@
 
 .budget-mapping {
   font-size: 0.8em;
-  background-color: #2189ff;
-  color: white;
-  padding: 5px 15px;
-  border-radius: 20px;
-  height: 2em;
-  font-weight: 700;
-  text-align: center;
+  text-align: right;
   display: flex;
+  gap: 5px;
   align-items: center;
-}
-.budget-mapping--none {
-  background-color: #fc6238;
-  cursor: pointer;
+  justify-content: flex-end;
 }
 .budget-mapping__container {
   display: flex;
@@ -87,13 +79,54 @@
   align-items: center;
   margin-bottom: 5px;
   gap: 5px;
+  flex-wrap: wrap;
+}
+.budget-mapping__list {
+  padding: 0;
+  list-style: none;
+}
+.budget-mapping__list li:not(:first-child) {
+  margin-top: 5px;
+}
+.budget-mapping__category {
+  background-color: #2189ff;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  height: 2em;
+  font-weight: 700;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+}
+.budget-mapping__amount input {
+  width: 80px;
+  border: none;
+  border-bottom: 1px solid #999;
+  border-radius: 3px;
 }
 .budget-mapping__remove {
   float: right;
   margin-left: 5px;
   cursor: pointer;
 }
-.budget-mapping__add {
+.budget-mapping__actions {
   color: #333;
-  margin-left: 5px;
+}
+.budget-mapping__add {
+  margin: 5px 0;
+  cursor: pointer;
+}
+.budget-mapping__edit {
+  margin: 5px 0;
+  cursor: pointer;
+}
+.budget-mapping__save {
+  margin: 5px 0;
+  cursor: pointer;
+  display: none;
+}
+.budget-mapping--none .budget-mapping__category {
+  background-color: #fc6238;
+  cursor: pointer;
 }

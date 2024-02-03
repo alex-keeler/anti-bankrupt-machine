@@ -56,6 +56,7 @@
                     <div class="classification-select__entry classification-select__entry--selected" data-classification="wants">Wants</div>
                     <div class="classification-select__entry" data-classification="needs">Needs</div>
                     <div class="classification-select__entry" data-classification="savings">Savings</div>
+                    <div class="classification-select__entry" data-classification="income">Income</div>
                 </div>
             </div>
         {% endif %}
@@ -67,17 +68,20 @@
                 {% set budget_class = "budget--wants" %}
             {% elif budget.classification == 'Savings' %}
                 {% set budget_class = "budget--savings" %}
+            {% elif budget.classification == 'Income' %}
+                {% set budget_class = "budget--income" %}
             {% endif %}
 
             <div class="well budget {{ budget_class }}" style="display: none;" data-id="{{ budget.id }}">
                 <div class="budget__title">{{ budget.title }}</div>
                 <div class="budget__details">
                     <div class="budget__spent">
-                        {{ format_amount(amount=budget.amount_spent) }} / {{ format_amount(amount=budget.amount_current) }}
                         {% if budget.amount_spent > 0 %}
+                            {{ format_amount(amount=budget.amount_spent) }} / {{ format_amount(amount=budget.amount_current) }}
                             <span class="budget__percentage">({{ budget.amount_spent / budget.amount_current * 100 | round(method='floor') }}%)</span>
                             <span class="transaction-details__dropdown"><i class="fa-solid fa-chevron-right"></i></span>
                         {% else %}
+                            {{ format_amount(amount=budget.amount_contributed) }} / {{ format_amount(amount=budget.amount_current) }}
                             <span class="budget__percentage">(0%)</span>
                         {% endif %}
                     </div>
@@ -92,13 +96,15 @@
                 </div>
                 <div class="transaction-details__container" style="display: none;"></div>
 
-                {% set spent_percentage = budget.amount_spent / budget.amount_current * 100 %}
-                {% set contributed_percentage = budget.amount_contributed / budget.amount_current * 100 %}
                 {% if budget.amount_total %}
-                    {% set max_percentage = budget.amount_current / budget.amount_total * 100 %}
+                    {% set amount_total = budget.amount_total %}
                 {% else %}
-                    {% set max_percentage = 100 %}
+                    {% set amount_total = budget.amount_current %}
                 {% endif %}
+
+                {% set spent_percentage = budget.amount_spent / amount_total * 100 %}
+                {% set contributed_percentage = budget.amount_contributed / amount_total * 100 %}
+                {% set max_percentage = budget.amount_current / amount_total * 100 %}
 
                 {% set bar_width = max(l=100, r=max(l=spent_percentage, r=contributed_percentage)) %}
 
