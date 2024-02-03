@@ -13,36 +13,42 @@ function buildBudgetStackedBarChart(cashFlowData) {
     let datasets = [];
     let colors = ['green', 'red', 'blue', 'orange', 'yellow', 'purple'];
 
-    $(cashFlowData.income_details_list).each(function(index, incomeDetails) {
-        let title = incomeDetails.title ?
-            incomeDetails.category_group_title + ' - ' + incomeDetails.title :
-            incomeDetails.category_group_title;
+    $(cashFlowData.budget_state_list).each(function(index, budgetState) {
+
+        let data = [0, 0, 0];
+
+        if (budgetState.classification === 'Income') {
+            data[0] = budgetState.amount_contributed_this_month / 100;
+        } else {
+            data[1] = budgetState.amount_monthly / 100;
+            data[2] = (budgetState.amount_spent_this_month + budgetState.amount_contributed_this_month) / 100;
+        }
 
         let dataset = {
-            label: title,
-            data: [incomeDetails.total_amount / 100, 0, 0],
+            label: budgetState.title,
+            data: data,
             backgroundColor: colors[index % colors.length]
         };
         datasets.push(dataset);
     });
-
-    $(cashFlowData.budget_details_list).each(function(index, budget) {
-
-        let budgetedDataset = {
-            label: budget.title,
-            data: [0, budget.amount_monthly / 100, 0],
-            backgroundColor: colors[index % colors.length]
-        }
-
-        let spentDataset = {
-            label: budget.title,
-            data: [0, 0, (Math.max(0, budget.amount_spent - budget.amount_contributed) + budget.amount_contributed_month) / 100],
-            backgroundColor: colors[index % colors.length]
-        }
-
-        datasets.push(budgetedDataset);
-        datasets.push(spentDataset);
-    });
+    //
+    // $(cashFlowData.budget_details_list).each(function(index, budget) {
+    //
+    //     let budgetedDataset = {
+    //         label: budget.title,
+    //         data: [0, budget.amount_monthly / 100, 0],
+    //         backgroundColor: colors[index % colors.length]
+    //     }
+    //
+    //     let spentDataset = {
+    //         label: budget.title,
+    //         data: [0, 0, (Math.max(0, budget.amount_spent - budget.amount_contributed) + budget.amount_contributed_month) / 100],
+    //         backgroundColor: colors[index % colors.length]
+    //     }
+    //
+    //     datasets.push(budgetedDataset);
+    //     datasets.push(spentDataset);
+    // });
 
     let spentUnbudgetedDataset = {
         label: "Unbudgeted",

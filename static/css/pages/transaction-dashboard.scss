@@ -65,43 +65,6 @@
         text-align: right;
     }
 
-    &__category {
-        font-size: 0.8em;
-        background-color: #2189ff;
-        color: white;
-        padding: 5px 15px;
-        border-radius: 20px;
-        height: 2em;
-        font-weight: 700;
-        text-align: center;
-        display: flex;
-        align-items: center;
-
-        &--uncategorized {
-            background-color: #fc6238;
-            cursor: pointer;
-        }
-    }
-
-    &__category-container {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        margin-bottom: 5px;
-        gap: 5px;
-    }
-
-    &__hide-from-calculations {
-        color: #555;
-        cursor: pointer;
-    }
-
-    &__category-remove {
-        float: right;
-        margin-left: 5px;
-        cursor: pointer;
-    }
-
     &__amount {
         flex: 0 0 100px;
         margin: 0 20px 0 10px;
@@ -113,6 +76,87 @@
 
         &--negative {
             color: red;
+        }
+    }
+}
+
+.budget-mapping {
+    font-size: 0.8em;
+    text-align: right;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: flex-end;
+
+    &__container {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 5px;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+
+    &__list {
+        padding: 0;
+        list-style: none;
+
+        & li:not(:first-child) {
+            margin-top: 5px;
+        }
+    }
+
+    &__category {
+        background-color: #2189ff;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        height: 2em;
+        font-weight: 700;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    &__amount {
+        & input {
+            width: 80px;
+            border: none;
+            border-bottom: 1px solid #999;
+            border-radius: 3px;
+        }
+    }
+
+    &__remove {
+        float: right;
+        margin-left: 5px;
+        cursor: pointer;
+    }
+
+    &__actions {
+        color: #333;
+    }
+
+    &__add {
+        margin: 5px 0;
+        cursor: pointer;
+    }
+
+    &__edit {
+        margin: 5px 0;
+        cursor: pointer;
+    }
+
+    &__save {
+        margin: 5px 0;
+        cursor: pointer;
+        display: none;
+    }
+
+    &--none {
+        .budget-mapping__category {
+            background-color: #fc6238;
+            cursor: pointer;
         }
     }
 }
