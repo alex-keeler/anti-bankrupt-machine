@@ -4,10 +4,12 @@ Custom web-based budgeting manager written in Rust
 # Deploy
 Run `cargo build --release` in repository directory
 
-Zip `target/release/` file
+Move `target/release/anti-bankrupt-machine` file to `server:~/budgetmanager`
 
-On server, delete everything in `budgetmanager` folder except for `Rocket.toml`
+Run `zip -r webapp.zip static/ templates/` and transfer to `server:~/budgetmanager`
 
-Unzip `release.zip` in `budgetmanager`
+Delete `server:~/budgetmanager/static/`, `server:~/budgetmanager/templates/`
+
+Unzip `webapp.zip` into `server:~/budgetmanager` and delete zip
 
 Use scripts to restart server
