@@ -351,7 +351,10 @@ function updateBudgetMappingElement(budgetMappingElement, mappingDetails) {
         budgetMappingElement.empty().append(behavior, amount, category);
         budgetMappingElement.attr('data-behavior', mappingDetails.behavior);
         setupBudgetMapping(budgetMappingElement);
-        editBudgetMappings(budgetMappingContainer);
+
+        if ($(budgetMappingContainer).find('.budget-mapping').length > 1) {
+            editBudgetMappings(budgetMappingContainer);
+        }
     } else {
         let transactionEntry = budgetMappingElement.parents('.transaction-list__entry');
         budgetMappingElement.remove();
@@ -379,8 +382,8 @@ function addBudgetMapping(budgetMappingContainer) {
 function editBudgetMappings(budgetMappingContainer) {
 
     $(budgetMappingContainer).data('editing', true);
-    let budgetMappings = $(budgetMappingContainer).find('.budget-mapping');
 
+    let budgetMappings = $(budgetMappingContainer).find('.budget-mapping');
     $(budgetMappings).each(function () {
         setupBudgetMapping($(this));
     });
