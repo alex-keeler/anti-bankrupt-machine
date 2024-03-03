@@ -26,7 +26,7 @@ pub async fn find_by_budget_and_time_period(
     }
 
     if end_date.is_some() {
-        sql = sql + " AND bt.date <= ? ";
+        sql = sql + " AND bt.date < ? ";
     }
 
     sql = sql + " ORDER BY bt.amount ASC ";
