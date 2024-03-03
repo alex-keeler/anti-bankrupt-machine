@@ -13,7 +13,7 @@ pub struct ElanFinancialCsvConverter;
 const DATE_FIELD: usize = 0;
 // const TRANSACTION_TYPE_FIELD = 1;
 const BANK_DESCRIPTION_FIELD: usize = 2;
-// const REFERENCE_NUMBER_FIELD: usize = 3;
+// const MEMO_FIELD: usize = 3;
 const AMOUNT_FIELD: usize = 4;
 
 impl BankRecordConverter<'_> for ElanFinancialCsvConverter {
@@ -46,7 +46,7 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
     for result in reader.records() {
         let record = result?;
 
-        let date = NaiveDate::parse_from_str(record.get(DATE_FIELD).ok_or("could not get date field").unwrap(), "%m/%d/%Y").unwrap();
+        let date = NaiveDate::parse_from_str(record.get(DATE_FIELD).ok_or("could not get date field").unwrap(), "%Y-%m-%d").unwrap();
         let bank_description = record.get(BANK_DESCRIPTION_FIELD).ok_or("could not get bank field").unwrap();
         let amount = parse_amount_from_str(record.get(AMOUNT_FIELD).ok_or("could not get amount field").unwrap()).unwrap();
 
@@ -68,10 +68,35 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
 }
 
 fn parse_amount_from_str(amount: &str) -> Result<i32, Box<dyn Error>> {
-    let amount = amount.replace(",", "")
+
+    let amount = normalize_decimal(amount)
+        .replace(",", "")
         .replace(".", "")
         .trim()
         .parse()?;
 
     Ok(amount)
+}
+
+fn normalize_decimal(amount: &str) -> String {
+
+    let decimal_index = amount.find(".");
+
+    if decimal_index.is_none() {
+        return format!("{}.00", amount);
+    }
+
+    let decimal_index = decimal_index.unwrap();
+    let decimal_digits = amount.len() - decimal_index - 1;
+
+    if decimal_digits < 2 {
+        return format!("{}.00", &amount[0..decimal_index]);
+    }
+
+    if decimal_digits > 2 {
+        let digits_over = decimal_digits - 2;
+        return String::from(&amount[0..(amount.len() - digits_over)]);
+    }
+
+    return String::from(amount);
 }
