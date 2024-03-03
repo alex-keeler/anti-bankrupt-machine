@@ -24,9 +24,9 @@ impl BankRecordConverter<'_> for ElanFinancialCsvConverter {
             return Ok(BankRecordReport::empty());
         }
 
-        // dates are kept in descending order in this file
-        let begin_date = transactions.get(transactions.len() - 1).unwrap().date;
-        let end_date = transactions.get(0).unwrap().date;
+        // dates are kept in ascending order in this file
+        let begin_date = transactions.get(0).unwrap().date;
+        let end_date = transactions.get(transactions.len() - 1).unwrap().date;
 
         Ok(BankRecordReport {
             transactions,
