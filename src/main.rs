@@ -13,6 +13,7 @@ use rocket_dyn_templates::Template;
 use crate::models::DB;
 use crate::models::users::User;
 
+mod configuration;
 mod controllers;
 mod services;
 mod repositories;
@@ -61,6 +62,7 @@ fn rocket() -> Rocket<Build> {
         .register("/", catchers![
             controllers::catchers::unauthorized_catcher::redirect_or_access_denied,
         ])
+        .attach(AdHoc::config::<configuration::AppConfig>())
         .attach(Template::custom(|engines| {
             engines.tera.register_function("format_amount", extensions::format_amount_extension::build());
             engines.tera.register_function("min", extensions::minimum_extension::build());

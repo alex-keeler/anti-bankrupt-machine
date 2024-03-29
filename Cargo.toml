@@ -14,6 +14,7 @@ num-format = "0.4.4"
 scraper = "0.17.1"
 mockall = "0.11.4"
 dotenv = "0.15.0"
+jsonwebtoken = "9"
 
 [dependencies.rocket]
 version = "=0.5.0-rc.3"

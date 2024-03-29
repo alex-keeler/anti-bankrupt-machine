@@ -5,3 +5,4 @@ pub mod bank_transaction_service;
 pub mod budget_service;
 pub mod converters;
 pub mod factories;
+pub mod user_token_service;
