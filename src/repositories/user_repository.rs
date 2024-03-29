@@ -1,9 +1,9 @@
-use std::error::Error;
 use rocket_db_pools::{sqlx, Connection};
+use sqlx::Error;
 use crate::models::users::User;
 use crate::models::DB;
 
-pub async fn find_user_by_id(id: i64, mut conn: Connection<DB>) -> Result<User, Box<dyn Error>> {
+pub async fn find_user_by_id(id: i64, mut conn: Connection<DB>) -> Result<User, Error> {
 
     let sql = "SELECT u.* FROM users u WHERE u.id = ?";
 
@@ -15,7 +15,7 @@ pub async fn find_user_by_id(id: i64, mut conn: Connection<DB>) -> Result<User, 
     Ok(user)
 }
 
-pub async fn find_user_by_username(username: &str, mut conn: Connection<DB>) -> Result<Option<User>, Box<dyn Error>> {
+pub async fn find_user_by_username(username: &str, mut conn: Connection<DB>) -> Result<Option<User>, Error> {
 
     let sql = "SELECT u.* FROM users u WHERE u.username = ?";
 
