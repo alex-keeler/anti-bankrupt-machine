@@ -25,9 +25,9 @@ pub async fn get_login_form(flash: Option<FlashMessage<'_>>) -> Template {
 }
 
 #[post("/login", data = "<form>")]
-pub async fn login_post(form: Form<Login<'_>>, conn: Connection<DB>, cookie_jar: &CookieJar<'_>) -> Result<Redirect, Flash<Redirect>> {
+pub async fn login_post(form: Form<Login<'_>>, mut conn: Connection<DB>, cookie_jar: &CookieJar<'_>) -> Result<Redirect, Flash<Redirect>> {
 
-    let user = user_service::login(form.username, form.password, conn).await;
+    let user = user_service::login(form.username, form.password, &mut *conn).await;
 
     if user.is_err() {
         return Err(Flash::error(Redirect::to(uri!(get_login_form)), "An error has occurred"));

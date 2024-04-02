@@ -7,4 +7,3 @@ pub mod cash_flow_dashboard_controller;
 
 pub mod api;
 pub mod catchers;
-mod login_api_controller;
