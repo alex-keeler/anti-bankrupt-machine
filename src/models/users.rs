@@ -7,6 +7,7 @@ use rocket::request::{FromRequest, Outcome};
 use rocket_db_pools::Connection;
 use sqlx::FromRow;
 use crate::configuration::AppConfig;
+use crate::models::DB;
 use crate::services::user_service;
 use crate::services::user_token_service;
 
@@ -48,7 +49,8 @@ impl<'r> FromRequest<'r> for User {
             Ok(user_claims) => {
                 match Connection::from_request(request).await {
                     Outcome::Success(conn) => {
-                        match user_service::find_user_by_id(user_claims.id, conn).await {
+                        let mut conn: Connection<DB> = conn;
+                        match user_service::find_user_by_id(user_claims.id, &mut *conn).await {
                             Ok(user) => {
                                 match user.is_active {
                                     true => Outcome::Success(user),

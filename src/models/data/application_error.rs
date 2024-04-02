@@ -1,17 +1,17 @@
 use rocket::http::Status;
 use rocket::{Request, response};
 use rocket::response::Responder;
-use sqlx::Error;
-use crate::models::data::application_error::ApplicationError::{RepositoryError, ServiceError};
+use crate::models::data::application_error::ApplicationError::{JwtAuthenticationError, RepositoryError, ServiceError};
 
 #[derive(Debug)]
 pub enum ApplicationError {
+    RepositoryError(sqlx::Error),
     ServiceError(String),
-    RepositoryError(Error),
+    JwtAuthenticationError(jsonwebtoken::errors::Error),
 }
 
-impl From<Error> for ApplicationError {
-    fn from(value: Error) -> Self {
+impl From<sqlx::Error> for ApplicationError {
+    fn from(value: sqlx::Error) -> Self {
         RepositoryError(value)
     }
 }
@@ -19,6 +19,12 @@ impl From<Error> for ApplicationError {
 impl From<String> for ApplicationError {
     fn from(value: String) -> Self {
         ServiceError(value)
+    }
+}
+
+impl From<jsonwebtoken::errors::Error> for ApplicationError {
+    fn from(value: jsonwebtoken::errors::Error) -> Self {
+        JwtAuthenticationError(value)
     }
 }
 
