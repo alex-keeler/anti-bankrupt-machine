@@ -1,21 +1,20 @@
 use std::collections::HashMap;
-use std::error::Error;
 use chrono::Months;
+use rocket_db_pools::Connection;
 
-use sqlx::MySql;
-use sqlx::pool::PoolConnection;
 use crate::models::data::application_error::ApplicationError;
 
 use crate::models::budget::BudgetHistory;
 use crate::models::budget_transaction_mapping::TransactionBehavior;
 use crate::models::data::budgets_by_classification::BudgetsByClassification;
+use crate::models::DB;
 use crate::models::query::budget_state::BudgetState;
 use crate::models::query::budget_details::BudgetDetails;
 use crate::models::users::User;
 use crate::repositories::{budget_history_repository, budget_repository, budget_transaction_mapping_repository};
 use crate::util::date_util;
 
-pub async fn find_budget_states_by_user_and_month(user: &User, year: i32, month: u32, conn: &mut PoolConnection<MySql>) -> Result<Vec<BudgetState>, ApplicationError> {
+pub async fn find_budget_states_by_user_and_month(user: &User, year: i32, month: u32, conn: &mut Connection<DB>) -> Result<Vec<BudgetState>, ApplicationError> {
 
     let mut budget_states = Vec::new();
 
@@ -135,7 +134,7 @@ pub async fn find_budget_states_by_user_and_month(user: &User, year: i32, month:
 }
 
 pub async fn find_budgets_by_user_grouped_by_classification(
-    user: &User, conn: &mut PoolConnection<MySql>
+    user: &User, conn: &mut Connection<DB>
 ) -> Result<Vec<BudgetsByClassification>, ApplicationError> {
 
     let budgets = budget_repository::find_all_by_user(user, conn).await?;
@@ -162,7 +161,8 @@ pub async fn find_budgets_by_user_grouped_by_classification(
     Ok(budgets_by_classification_list)
 }
 
-pub async fn get_budget_details_list_by_user_and_month(user: &User, year: i32, month: u32, conn: &mut PoolConnection<MySql>) -> Result<Vec<BudgetDetails>, Box<dyn Error>> {
+pub async fn get_budget_details_list_by_user_and_month(user: &User, year: i32, month: u32, conn: &mut Connection<DB>) -> Result<Vec<BudgetDetails>, ApplicationError> {
     let (begin_date, end_date) = date_util::get_date_range(year, month)?;
-    budget_repository::get_details_list_for_user_and_time_period(user, begin_date, end_date, conn).await.map_err(|e| e.into_database_error().unwrap().into())
+    let budget_details_list = budget_repository::get_details_list_for_user_and_time_period(user, begin_date, end_date, conn).await?;
+    Ok(budget_details_list)
 }

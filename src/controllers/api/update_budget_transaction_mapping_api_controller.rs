@@ -12,8 +12,8 @@ pub async fn add_budget_transaction_mapping(
     behavior: TransactionBehavior
 ) -> Json<BudgetTransactionMappingDetails> {
 
-    let mapping_id = bank_transaction_service::add_budget_transaction_mapping(transaction_id, budget_id, &user, amount, behavior, &mut *conn).await.unwrap();
-    let mapping_details = bank_transaction_service::get_budget_transaction_mapping_details_by_id(mapping_id, &user, &mut *conn).await.unwrap();
+    let mapping_id = bank_transaction_service::add_budget_transaction_mapping(transaction_id, budget_id, &user, amount, behavior, &mut conn).await.unwrap();
+    let mapping_details = bank_transaction_service::get_budget_transaction_mapping_details_by_id(mapping_id, &user, &mut conn).await.unwrap();
     Json(mapping_details)
 }
 
@@ -21,7 +21,7 @@ pub async fn add_budget_transaction_mapping(
 pub async fn remove_budget_transaction_mapping(
     budget_transaction_mapping_id: i64, user: User, mut conn: Connection<DB>
 ) {
-    bank_transaction_service::remove_budget_transaction_mapping(budget_transaction_mapping_id, &user, &mut *conn).await.unwrap();
+    bank_transaction_service::remove_budget_transaction_mapping(budget_transaction_mapping_id, &user, &mut conn).await.unwrap();
 }
 
 #[post("/secure/api/budget-transaction-mapping/update/<budget_transaction_mapping_id>?<amount>&<behavior>")]
@@ -29,7 +29,7 @@ pub async fn update_budget_transaction_mapping(
     budget_transaction_mapping_id: i64, amount: i32, behavior: TransactionBehavior, user: User, mut conn: Connection<DB>
 ) -> Json<BudgetTransactionMappingDetails> {
 
-    bank_transaction_service::update_budget_transaction_mapping(budget_transaction_mapping_id, &user, amount, behavior, &mut *conn).await.unwrap();
-    let mapping_details = bank_transaction_service::get_budget_transaction_mapping_details_by_id(budget_transaction_mapping_id, &user, &mut *conn).await.unwrap();
+    bank_transaction_service::update_budget_transaction_mapping(budget_transaction_mapping_id, &user, amount, behavior, &mut conn).await.unwrap();
+    let mapping_details = bank_transaction_service::get_budget_transaction_mapping_details_by_id(budget_transaction_mapping_id, &user, &mut conn).await.unwrap();
     Json(mapping_details)
 }

@@ -6,37 +6,38 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-grass = "0.12.4"
+grass = "0.13.2"
 argon2 = "0.5.0"
 csv = "1.2.2"
 regex = "1.9.1"
 num-format = "0.4.4"
-scraper = "0.17.1"
-mockall = "0.11.4"
+scraper = "0.19.0"
+mockall = "0.12.1"
 dotenv = "0.15.0"
 jsonwebtoken = "9"
+rocket_cors = "0.6.0"
 
 [dependencies.rocket]
-version = "=0.5.0-rc.3"
+version = "0.5.1"
 features = ["secrets", "json"]
 
 [dependencies.rocket_dyn_templates]
-version = "=0.1.0-rc.3"
+version = "0.1.0"
 features = ["tera"]
+
+[dependencies.rocket_db_pools]
+version = "0.1.0"
+features = ["sqlx_mysql"]
 
 [dependencies.serde]
 version = "1.0"
 features = ["derive"]
 
 [dependencies.sqlx]
-version = "0.6"
+version = "0.7.4"
 default-features = false
 features = ["macros", "migrate", "mysql", "chrono"]
 
 [dependencies.chrono]
 version = "0.4.26"
 features = ["serde"]
-
-[dependencies.rocket_db_pools]
-version = "=0.1.0-rc.3"
-features = ["sqlx_mysql"]

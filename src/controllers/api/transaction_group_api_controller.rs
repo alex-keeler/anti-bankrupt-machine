@@ -12,7 +12,7 @@ pub async fn get_top_transaction_groups_by_category(budget_id: i64, limit: i32, 
     let (begin_date, end_date) = date_util::get_date_range(year, month).unwrap();
 
     let transaction_groups = bank_transaction_service::get_top_transaction_groups_by_budget_id(
-        budget_id, limit, Some(begin_date), Some(end_date), &user, &mut *conn).await.unwrap();
+        budget_id, limit, Some(begin_date), Some(end_date), &user, &mut conn).await.unwrap();
 
     Json(transaction_groups)
 }

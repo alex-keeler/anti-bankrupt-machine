@@ -12,8 +12,8 @@ pub async fn set_user_description(transaction_id: i64, mut user_description: Opt
         user_description = None;
     }
 
-    bank_transaction_service::set_transaction_user_description(transaction_id, user_description, &user, &mut *conn).await.unwrap();
-    let transaction_details = bank_transaction_service::get_transaction_details_by_id(transaction_id, &user, &mut *conn).await.unwrap();
+    bank_transaction_service::set_transaction_user_description(transaction_id, user_description, &user, &mut conn).await.unwrap();
+    let transaction_details = bank_transaction_service::get_transaction_details_by_id(transaction_id, &user, &mut conn).await.unwrap();
     Json(transaction_details)
 }
 
@@ -24,7 +24,7 @@ pub async fn set_comment(transaction_id: i64, mut comment: Option<String>, user:
         comment = None;
     }
 
-    bank_transaction_service::set_transaction_comment(transaction_id, comment, &user, &mut *conn).await.unwrap();
-    let transaction_details = bank_transaction_service::get_transaction_details_by_id(transaction_id, &user, &mut *conn).await.unwrap();
+    bank_transaction_service::set_transaction_comment(transaction_id, comment, &user, &mut conn).await.unwrap();
+    let transaction_details = bank_transaction_service::get_transaction_details_by_id(transaction_id, &user, &mut conn).await.unwrap();
     Json(transaction_details)
 }

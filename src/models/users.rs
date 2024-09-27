@@ -32,14 +32,14 @@ impl<'r> FromRequest<'r> for User {
             .get_one("Auth-Token");
 
         if user_jwt.is_none() {
-            return Outcome::Failure((Status::Unauthorized, UserError::MissingAuthToken));
+            return Outcome::Error((Status::Unauthorized, UserError::MissingAuthToken));
         }
         let user_jwt = user_jwt.unwrap();
 
         let config = request.guard::<&State<AppConfig>>().await;
-        if config.is_failure() {
+        if config.is_error() {
             println!("Config fetch failed.");
-            return Outcome::Failure((Status::InternalServerError, UserError::InternalValidationError));
+            return Outcome::Error((Status::InternalServerError, UserError::InternalValidationError));
         }
         let config = config.unwrap();
 
@@ -50,17 +50,17 @@ impl<'r> FromRequest<'r> for User {
                 match Connection::from_request(request).await {
                     Outcome::Success(conn) => {
                         let mut conn: Connection<DB> = conn;
-                        match user_service::find_user_by_id(user_claims.id, &mut *conn).await {
+                        match user_service::find_user_by_id(user_claims.id, &mut conn).await {
                             Ok(user) => {
                                 match user.is_active {
                                     true => Outcome::Success(user),
-                                    false => Outcome::Failure((Status::Unauthorized, UserError::InactiveUser)),
+                                    false => Outcome::Error((Status::Unauthorized, UserError::InactiveUser)),
                                 }
                             },
-                            Err(_) => Outcome::Failure((Status::Unauthorized, UserError::InvalidAuthToken)),
+                            Err(_) => Outcome::Error((Status::Unauthorized, UserError::InvalidAuthToken)),
                         }
                     },
-                    _ => Outcome::Failure((Status::ServiceUnavailable, UserError::ConnectionError)),
+                    _ => Outcome::Error((Status::ServiceUnavailable, UserError::ConnectionError)),
                 }
             }
             Err(err) => {
@@ -75,8 +75,8 @@ impl<'r> FromRequest<'r> for User {
                     ErrorKind::InvalidAudience |
                     ErrorKind::InvalidSubject |
                     ErrorKind::ImmatureSignature |
-                    ErrorKind::InvalidAlgorithm => Outcome::Failure((Status::Unauthorized, UserError::InvalidAuthToken)),
-                    _ => Outcome::Failure((Status::InternalServerError, UserError::InternalValidationError)),
+                    ErrorKind::InvalidAlgorithm => Outcome::Error((Status::Unauthorized, UserError::InvalidAuthToken)),
+                    _ => Outcome::Error((Status::InternalServerError, UserError::InternalValidationError)),
                 }
             }
         }

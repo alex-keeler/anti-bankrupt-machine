@@ -1,13 +1,12 @@
-use std::error::Error;
+use sqlx::Error;
 use rocket_db_pools::Connection;
-use sqlx::MySql;
-use sqlx::pool::PoolConnection;
 use crate::models::bank_account_users::BankAccountUserRole;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::DB;
 use crate::models::users::User;
+use crate::repositories::repository_util::get_executor_conn;
 
-pub async fn find_accounts_for_user(user: User, restrict_to_roles: Option<Vec<BankAccountUserRole>>, mut conn: Connection<DB>) -> Result<Vec<BankAccount>, Box<dyn Error>> {
+pub async fn find_accounts_for_user(user: User, restrict_to_roles: Option<Vec<BankAccountUserRole>>, conn: &mut Connection<DB>) -> Result<Vec<BankAccount>, Error> {
 
     let mut sql = String::from("\
             SELECT ba.* \
@@ -30,12 +29,12 @@ pub async fn find_accounts_for_user(user: User, restrict_to_roles: Option<Vec<Ba
         }
     }
 
-    let bank_accounts = query.fetch_all(&mut *conn).await?;
+    let bank_accounts = query.fetch_all(get_executor_conn(conn)).await?;
 
     Ok(bank_accounts)
 }
 
-pub async fn find_account_by_id(id: i64, conn: &mut PoolConnection<MySql>) -> Result<BankAccount, Box<dyn Error>> {
+pub async fn find_account_by_id(id: i64, conn: &mut Connection<DB>) -> Result<BankAccount, Error> {
 
     let sql = "\
             SELECT ba.* \
@@ -46,7 +45,7 @@ pub async fn find_account_by_id(id: i64, conn: &mut PoolConnection<MySql>) -> Re
     let query = sqlx::query_as::<_, BankAccount>(sql)
         .bind(id);
 
-    let bank_account = query.fetch_one(conn).await?;
+    let bank_account = query.fetch_one(get_executor_conn(conn)).await?;
 
     Ok(bank_account)
 }

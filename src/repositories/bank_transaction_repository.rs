@@ -1,20 +1,19 @@
 
 use chrono::NaiveDate;
 use sqlx::{Error, MySql, Row, Transaction};
-use sqlx::pool::PoolConnection;
+use rocket_db_pools::Connection;
 
 use crate::models::bank_account_users::BankAccountUserRole;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
 use crate::models::budget::Budget;
+use crate::models::DB;
 use crate::models::query::transaction_details::TransactionDetails;
 use crate::models::query::transaction_group::TransactionGroup;
 use crate::models::users::User;
+use crate::repositories::repository_util::{get_executor_conn, get_executor_txn};
 
-pub async fn find_transactions_for_time_period(
-    begin_date: Option<NaiveDate>, end_date: Option<NaiveDate>, bank_account: &BankAccount,
-    txn: &mut Transaction<'_, MySql>,
-) -> Result<Vec<BankTransaction>, Error> {
+pub async fn find_transactions_for_time_period(begin_date: Option<NaiveDate>, end_date: Option<NaiveDate>, bank_account: &BankAccount, txn: &mut Transaction<'_, MySql>) -> Result<Vec<BankTransaction>, Error> {
 
     let mut sql = String::from("\
         SELECT bt.* FROM bank_transaction bt \
@@ -40,13 +39,11 @@ pub async fn find_transactions_for_time_period(
         query = query.bind(end_date.unwrap());
     }
 
-    let transactions = query.fetch_all(txn).await?;
+    let transactions = query.fetch_all(get_executor_txn(txn)).await?;
     Ok(transactions)
 }
 
-pub async fn insert(
-    transaction: BankTransaction, txn: &mut Transaction<'_, MySql>
-) -> Result<(), Error> {
+pub async fn insert(transaction: BankTransaction, txn: &mut Transaction<'_, MySql>) -> Result<(), Error> {
 
     let sql = "\
         INSERT INTO bank_transaction \
@@ -62,14 +59,12 @@ pub async fn insert(
         .bind(transaction.amount)
         .bind(transaction.bank_account_id);
 
-    let _ = query.execute(txn).await?;
+    let _ = query.execute(get_executor_txn(txn)).await?;
 
     Ok(())
 }
 
-pub async fn get_transaction_details_by_user(
-    user: &User, conn: &mut PoolConnection<MySql>
-) -> Result<Vec<TransactionDetails>, Error> {
+pub async fn get_transaction_details_by_user(user: &User, conn: &mut Connection<DB>) -> Result<Vec<TransactionDetails>, Error> {
 
     let sql = "\
             SELECT bt.id, bt.date, bt.bank_description, bt.user_description, bt.comment, \
@@ -91,13 +86,11 @@ pub async fn get_transaction_details_by_user(
     let query = sqlx::query_as::<_, TransactionDetails>(sql)
         .bind(user.id);
 
-    let transaction_details = query.fetch_all(conn).await?;
+    let transaction_details = query.fetch_all(get_executor_conn(conn)).await?;
     Ok(transaction_details)
 }
 
-pub async fn get_transaction_details_by_id(
-    transaction_id: i64, user: &User, conn: &mut PoolConnection<MySql>
-) -> Result<TransactionDetails, Error> {
+pub async fn get_transaction_details_by_id(transaction_id: i64, user: &User, conn: &mut Connection<DB>) -> Result<TransactionDetails, Error> {
 
     let sql = "\
             SELECT bt.id, bt.date, bt.bank_description, bt.user_description, bt.comment, bt.amount, \
@@ -114,13 +107,11 @@ pub async fn get_transaction_details_by_id(
         .bind(transaction_id)
         .bind(user.id);
 
-    let transaction_details = query.fetch_one(conn).await?;
+    let transaction_details = query.fetch_one(get_executor_conn(conn)).await?;
     Ok(transaction_details)
 }
 
-pub async fn set_user_description(
-    transaction: BankTransaction, user_description: Option<String>, txn: &mut Transaction<'_, MySql>
-) -> Result<(), Error> {
+pub async fn set_user_description(transaction: BankTransaction, user_description: Option<String>, txn: &mut Transaction<'_, MySql>) -> Result<(), Error> {
 
     let sql = "\
             UPDATE bank_transaction bt
@@ -133,14 +124,12 @@ pub async fn set_user_description(
         .bind(user_description)
         .bind(transaction.id.unwrap());
 
-    let _ = query.execute(txn).await?;
+    let _ = query.execute(get_executor_txn(txn)).await?;
 
     Ok(())
 }
 
-pub async fn set_comment(
-    transaction: BankTransaction, comment: Option<String>, txn: &mut Transaction<'_, MySql>
-) -> Result<(), Error> {
+pub async fn set_comment(transaction: BankTransaction, comment: Option<String>, txn: &mut Transaction<'_, MySql>) -> Result<(), Error> {
 
     let sql = "\
             UPDATE bank_transaction bt
@@ -153,15 +142,12 @@ pub async fn set_comment(
         .bind(comment)
         .bind(transaction.id.unwrap());
 
-    let _ = query.execute(txn).await?;
+    let _ = query.execute(get_executor_txn(txn)).await?;
 
     Ok(())
 }
 
-pub async fn find_editable_transaction_by_id(
-    transaction_id: i64, user: &User,
-    conn: &mut PoolConnection<MySql>
-) -> Result<BankTransaction, Error> {
+pub async fn find_editable_transaction_by_id(transaction_id: i64, user: &User, conn: &mut Connection<DB>) -> Result<BankTransaction, Error> {
 
     let sql = "\
             SELECT bt.* FROM bank_transaction bt
@@ -179,15 +165,12 @@ pub async fn find_editable_transaction_by_id(
         .bind(BankAccountUserRole::Owner)
         .bind(BankAccountUserRole::Editor);
 
-    let transaction = query.fetch_one(conn).await?;
+    let transaction = query.fetch_one(get_executor_conn(conn)).await?;
 
     Ok(transaction)
 }
 
-pub async fn get_top_transaction_groups_for_budget(
-    budget: Budget, limit: i32, begin_date: Option<NaiveDate>, end_date: Option<NaiveDate>,
-    user: &User, conn: &mut PoolConnection<MySql>
-) -> Result<Vec<TransactionGroup>, Error> {
+pub async fn get_top_transaction_groups_for_budget(budget: Budget, limit: i32, begin_date: Option<NaiveDate>, end_date: Option<NaiveDate>, user: &User, conn: &mut Connection<DB>) -> Result<Vec<TransactionGroup>, Error> {
 
     let mut sql = String::from("\
             SELECT bt.bank_description, CAST(SUM(bt.amount) AS SIGNED) AS total_amount, COUNT(bt.id) AS count \
@@ -231,14 +214,12 @@ pub async fn get_top_transaction_groups_for_budget(
 
     query = query.bind(limit);
 
-    let transaction_groups = query.fetch_all(conn).await?;
+    let transaction_groups = query.fetch_all(get_executor_conn(conn)).await?;
 
     Ok(transaction_groups)
 }
 
-pub async fn get_amount_spent_unbudgeted_for_user_and_time_period(
-    user: &User, begin_date: NaiveDate, end_date: NaiveDate, conn: &mut PoolConnection<MySql>
-) -> Result<i32, Error> {
+pub async fn get_amount_spent_unbudgeted_for_user_and_time_period(user: &User, begin_date: NaiveDate, end_date: NaiveDate, conn: &mut Connection<DB>) -> Result<i32, Error> {
 
     let sql = "\
             SELECT CAST(IFNULL(-1 * SUM(bt.amount), 0) AS INT) AS amount_spent \
@@ -262,6 +243,6 @@ pub async fn get_amount_spent_unbudgeted_for_user_and_time_period(
         .bind(end_date)
         .bind(user.id);
 
-    let row = query.fetch_one(conn).await?;
+    let row = query.fetch_one(get_executor_conn(conn)).await?;
     Ok(row.get("amount_spent"))
 }
