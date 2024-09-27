@@ -6,6 +6,7 @@ use sqlx::types::chrono::NaiveDate;
 use crate::models::data::bank_record_report::BankRecordReport;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
+use crate::models::data::application_error::ApplicationError;
 use crate::services::converters::BankRecordConverter;
 
 pub struct AmericanExpressCreditCsvConverter;
@@ -15,7 +16,7 @@ const BANK_DESCRIPTION_FIELD: usize = 1;
 const AMOUNT_FIELD: usize = 2;
 
 impl BankRecordConverter<'_> for AmericanExpressCreditCsvConverter {
-    fn convert(&self, file: &TempFile<'_>, bank_account: &BankAccount) -> Result<BankRecordReport, Box<dyn Error>> {
+    fn convert(&self, file: &TempFile<'_>, bank_account: &BankAccount) -> Result<BankRecordReport, ApplicationError> {
         let transactions = parse_data(file, bank_account)?;
 
         if transactions.is_empty() {
@@ -35,7 +36,7 @@ impl BankRecordConverter<'_> for AmericanExpressCreditCsvConverter {
 }
 
 // TODO: proper error handling using results
-fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<BankTransaction>, Box<dyn Error>> {
+fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<BankTransaction>, ApplicationError> {
     let mut reader = csv::Reader::from_path(file.path().unwrap()).unwrap();
 
     let mut transactions: Vec<BankTransaction> = Vec::new();

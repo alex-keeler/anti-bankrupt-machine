@@ -5,6 +5,7 @@ use crate::models::data::bank_record_report::BankRecordReport;
 use crate::models::bank_accounts::{Bank, BankAccount};
 use elan_financial_csv_converter::ElanFinancialCsvConverter;
 use independent_bank_csv_converter::IndependentBankCsvConverter;
+use crate::models::data::application_error::ApplicationError;
 use crate::services::converters::american_express_credit_csv_converter::AmericanExpressCreditCsvConverter;
 use crate::services::converters::venmo_csv_converter::VenmoCsvConverter;
 use crate::services::converters::american_express_savings_csv_converter::AmericanExpressSavingsCsvConverter;
@@ -17,7 +18,7 @@ pub mod american_express_savings_csv_converter;
 pub mod american_express_credit_csv_converter;
 
 pub trait BankRecordConverter<'a> {
-    fn convert(&self, file: &TempFile<'_>, bank_account: &BankAccount) -> Result<BankRecordReport, Box<dyn Error>>;
+    fn convert(&self, file: &TempFile<'_>, bank_account: &BankAccount) -> Result<BankRecordReport, ApplicationError>;
 }
 
 pub struct BankRecordConverterFactory;

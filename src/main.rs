@@ -6,9 +6,11 @@ use std::path::{Path, PathBuf};
 use rocket::{Build, fairing, Rocket};
 use rocket::fairing::AdHoc;
 use rocket::fs::NamedFile;
+use rocket::http::Method;
 use rocket::response::Redirect;
 use rocket_db_pools::Database;
 use rocket_dyn_templates::Template;
+use rocket_cors::{AllowedOrigins, CorsOptions};
 
 use crate::models::DB;
 use crate::models::users::User;
@@ -37,6 +39,17 @@ async fn static_files(file: PathBuf) -> Option<NamedFile> {
 
 #[launch]
 fn rocket() -> Rocket<Build> {
+
+    let cors = CorsOptions::default()
+        .allowed_origins(AllowedOrigins::some_exact(&["http://localhost:5173"]))
+        .allowed_methods(
+            vec![Method::Get, Method::Post]
+                .into_iter()
+                .map(From::from)
+                .collect(),
+        )
+        .allow_credentials(true);
+
     // TODO: need to find with a better way to mount controller paths
     rocket::build()
         .mount("/", routes![
@@ -61,9 +74,10 @@ fn rocket() -> Rocket<Build> {
         ])
         .mount("/static", routes![static_files])
         .register("/", catchers![
-            controllers::catchers::unauthorized_catcher::redirect_or_access_denied,
+            //controllers::catchers::unauthorized_catcher::redirect_or_access_denied,
         ])
         .attach(AdHoc::config::<configuration::AppConfig>())
+        .attach(cors.to_cors().unwrap())
         .attach(Template::custom(|engines| {
             engines.tera.register_function("format_amount", extensions::format_amount_extension::build());
             engines.tera.register_function("min", extensions::minimum_extension::build());

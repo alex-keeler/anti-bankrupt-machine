@@ -15,14 +15,14 @@ pub struct Upload<'r> {
 }
 
 #[get("/secure/upload/bank-record")]
-pub async fn get_upload_form(user: User, conn: Connection<DB>) -> Template {
-    let editable_accounts = bank_service::find_editable_accounts_for_user(user, conn).await.unwrap();
+pub async fn get_upload_form(user: User, mut conn: Connection<DB>) -> Template {
+    let editable_accounts = bank_service::find_editable_accounts_for_user(user, &mut conn).await.unwrap();
     Template::render("pages/bank-record-upload", context! { accounts: editable_accounts })
 }
 
 #[post("/secure/upload/bank-record", data = "<form>")]
 pub async fn upload_post(form: Form<Upload<'_>>, user: User, mut conn: Connection<DB>) -> Redirect {
-    let bank_account = bank_service::find_account_by_id(form.bank_account_id, &mut *conn).await.unwrap();
-    bank_transaction_service::import_bank_record_file(&form.file, user, bank_account, &mut *conn).await.unwrap();
+    let bank_account = bank_service::find_account_by_id(form.bank_account_id, &mut conn).await.unwrap();
+    bank_transaction_service::import_bank_record_file(&form.file, user, bank_account, &mut conn).await.unwrap();
     Redirect::to(uri!(dashboard_controller::get_dashboard)) // TODO: redirect to transactions screen
 }

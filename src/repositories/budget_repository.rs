@@ -1,14 +1,16 @@
 use chrono::NaiveDate;
-use rocket_db_pools::Pool;
+use rocket_db_pools::{Connection, Pool};
 
 use sqlx::{MySql, Error, query_as};
 use sqlx::pool::PoolConnection;
 
 use crate::models::budget::Budget;
+use crate::models::DB;
 use crate::models::query::budget_details::BudgetDetails;
 use crate::models::users::User;
+use crate::repositories::repository_util::get_executor_conn;
 
-pub async fn find_by_id(id: i64, user: &User, conn: &mut PoolConnection<MySql>) -> Result<Budget, Error> {
+pub async fn find_by_id(id: i64, user: &User, conn: &mut Connection<DB>) -> Result<Budget, Error> {
     let sql = "\
             SELECT b.* FROM budget b \
             WHERE b.id = ? \
@@ -19,11 +21,11 @@ pub async fn find_by_id(id: i64, user: &User, conn: &mut PoolConnection<MySql>) 
         .bind(id)
         .bind(user.id);
 
-    let budget = query.fetch_one(conn).await?;
+    let budget = query.fetch_one(get_executor_conn(conn)).await?;
     Ok(budget)
 }
 
-pub async fn find_all_by_user(user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<Budget>, Error> {
+pub async fn find_all_by_user(user: &User, conn: &mut Connection<DB>) -> Result<Vec<Budget>, Error> {
     let sql = "\
             SELECT b.* FROM budget b \
                 JOIN users u ON u.id = b.user_id \
@@ -34,11 +36,11 @@ pub async fn find_all_by_user(user: &User, conn: &mut PoolConnection<MySql>) -> 
     let query = query_as::<_, Budget>(sql)
         .bind(user.id);
 
-    let budget_list = query.fetch_all(conn).await?;
+    let budget_list = query.fetch_all(get_executor_conn(conn)).await?;
     Ok(budget_list)
 }
 
-pub async fn find_all_visible_by_user(user: &User, conn: &mut PoolConnection<MySql>) -> Result<Vec<Budget>, Error> {
+pub async fn find_all_visible_by_user(user: &User, conn: &mut Connection<DB>) -> Result<Vec<Budget>, Error> {
     let sql = "\
             SELECT b.* FROM budget b \
                 JOIN users u ON u.id = b.user_id \
@@ -50,11 +52,11 @@ pub async fn find_all_visible_by_user(user: &User, conn: &mut PoolConnection<MyS
     let query = query_as::<_, Budget>(sql)
         .bind(user.id);
 
-    let budget_list = query.fetch_all(conn).await?;
+    let budget_list = query.fetch_all(get_executor_conn(conn)).await?;
     Ok(budget_list)
 }
 
-pub async fn get_details_list_for_user_and_time_period(user: &User, begin_date: NaiveDate, end_date: NaiveDate, conn: &mut PoolConnection<MySql>) -> Result<Vec<BudgetDetails>, Error> {
+pub async fn get_details_list_for_user_and_time_period(user: &User, begin_date: NaiveDate, end_date: NaiveDate, conn: &mut Connection<DB>) -> Result<Vec<BudgetDetails>, Error> {
     let sql = "\
             SELECT b.id, b.title, b.classification, b.spending_type, b.cumulative, b.rollover, \
                 bh.amount, bh.time_months, bh.payment_date, bh.recur_count \
@@ -72,6 +74,6 @@ pub async fn get_details_list_for_user_and_time_period(user: &User, begin_date: 
         .bind(begin_date)
         .bind(end_date);
 
-    let budget_details_list = query.fetch_all(conn).await?;
+    let budget_details_list = query.fetch_all(get_executor_conn(conn)).await?;
     Ok(budget_details_list)
 }

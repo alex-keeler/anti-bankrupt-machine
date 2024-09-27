@@ -14,7 +14,7 @@ pub async fn get_dashboard(year: Option<i32>, month: Option<u32>, user: User, mu
     let year = year.unwrap_or(current_date.year());
     let month = month.unwrap_or(current_date.month());
 
-    let budget_state_list = budget_service::find_budget_states_by_user_and_month(&user, year, month, &mut *conn).await.unwrap();
+    let budget_state_list = budget_service::find_budget_states_by_user_and_month(&user, year, month, &mut conn).await.unwrap();
 
     let mut variable_spent = 0;
     let mut variable_budgeted = 0;

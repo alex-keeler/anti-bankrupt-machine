@@ -1,17 +1,15 @@
 use rocket_db_pools::Connection;
-use sqlx::MySql;
-use sqlx::pool::PoolConnection;
 use crate::models::{DB, users::User};
 use crate::models::data::application_error::ApplicationError;
 use crate::repositories::user_repository;
 use crate::services::password_hash_util;
 
-pub async fn find_user_by_id(id: i64, conn: &mut PoolConnection<MySql>) -> Result<User, ApplicationError> {
+pub async fn find_user_by_id(id: i64, conn: &mut Connection<DB>) -> Result<User, ApplicationError> {
     let user = user_repository::find_user_by_id(id, conn).await?;
     Ok(user)
 }
 
-pub async fn login(username: &str, password: &str, conn: &mut PoolConnection<MySql>) -> Result<Option<User>, ApplicationError> {
+pub async fn login(username: &str, password: &str, conn: &mut Connection<DB>) -> Result<Option<User>, ApplicationError> {
     let user = user_repository::find_user_by_username(username, conn).await?;
 
     if user.is_none() {

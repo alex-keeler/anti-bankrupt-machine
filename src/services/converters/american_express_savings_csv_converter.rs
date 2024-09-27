@@ -6,6 +6,7 @@ use sqlx::types::chrono::NaiveDate;
 use crate::models::data::bank_record_report::BankRecordReport;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
+use crate::models::data::application_error::ApplicationError;
 use crate::services::converters::BankRecordConverter;
 
 pub struct AmericanExpressSavingsCsvConverter;
@@ -15,7 +16,7 @@ const BANK_DESCRIPTION_FIELD: usize = 1;
 const AMOUNT_FIELD: usize = 2;
 
 impl BankRecordConverter<'_> for AmericanExpressSavingsCsvConverter {
-    fn convert(&self, file: &TempFile<'_>, bank_account: &BankAccount) -> Result<BankRecordReport, Box<dyn Error>> {
+    fn convert(&self, file: &TempFile<'_>, bank_account: &BankAccount) -> Result<BankRecordReport, ApplicationError> {
         let transactions = parse_data(file, bank_account)?;
 
         if transactions.is_empty() {
@@ -35,7 +36,7 @@ impl BankRecordConverter<'_> for AmericanExpressSavingsCsvConverter {
 }
 
 // TODO: proper error handling using results
-fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<BankTransaction>, Box<dyn Error>> {
+fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<BankTransaction>, ApplicationError> {
     //let mut reader = csv::Reader::from_path(file.path().unwrap()).unwrap();
     let mut reader = csv::ReaderBuilder::new()
         .has_headers(false)
@@ -66,7 +67,7 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
     Ok(transactions)
 }
 
-fn parse_amount_from_str(amount: &str) -> Result<i32, Box<dyn Error>> {
+fn parse_amount_from_str(amount: &str) -> Result<i32, ApplicationError> {
     // the amount after the decimal might not be two digits so we have to parse the dollar and cent amount
 
     let mut amount_split = amount.trim().split(".");
