@@ -51,9 +51,10 @@ impl From<jsonwebtoken::errors::Error> for ApplicationError {
 
 impl<'r, 'o: 'r> Responder<'r, 'o> for ApplicationError {
     fn respond_to(self, req: &'r Request<'_>) -> response::Result<'o> {
+        println!("Handling ApplicationError: {:?}", self);
         match self {
             ApplicationError::AuthenticationError(_) => Status::Unauthorized.respond_to(req),
-            _ => Status::InternalServerError.respond_to(req)
+            _ => Status::InternalServerError.respond_to(req),
         }
     }
 }

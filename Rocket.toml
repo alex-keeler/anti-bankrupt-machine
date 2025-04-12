@@ -3,4 +3,4 @@ url = "mysql://budgetuser:keepmeoutofbankruptcy@localhost:3306/budgetmanager?use
 
 [default]
 secret_key = "Tf/8EyYczZrUZSRZXvV7bouJeBSmFEYmEUmMTbedRlux7kJqeAPdgLQjbNupH/koB8CphcHAjVrh2vrq7H9JGg=="
-user_jwt_secret = "U6FpnPqSX72Un7Y9hmXzcQNuA5mZxInUjnw4vKEBKCiKFBKZHmSxtBo+z2lIDoo6pEGz/G3Tgxo1z0d6TQYbaEEuUkGjRt50UjuxnOp01bxrQLmcrhphm9v5hWTSkeGqixQVO5evZPChluzi0M10wFKChFrmFxRrdRTja1Hhq8E8KS/4gJlzkLYqVN7eH/aPEVUu6D6rdtGLXWgYphbucssQOuYZZGwkR74Wgw=="
+user_jwt_secret = "/4ZcymYlKJjngRkF1ZSHIgTBw2F7KgiOlFQh5LH9ydEjivq/3LYzxtfDb54rmtu74maM2PdV9PTKSs6FXSqiPEN31tAV36ZCELeiZUMl/2vvl0pS3LxYcOx+Rvmov9xTlh7eKPyWB992kz9r61Zd9OqWls7+7uvwDp7+/teF+K9a"

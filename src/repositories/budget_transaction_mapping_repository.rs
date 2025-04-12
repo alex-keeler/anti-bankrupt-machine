@@ -45,18 +45,25 @@ pub async fn find_by_budget_and_time_period(budget: &Budget, begin_date: Option<
     Ok(transactions)
 }
 
-pub async fn get_details_by_transaction_id(bank_transaction_id: i64, conn: &mut Connection<DB>) -> Result<Vec<BudgetTransactionMappingDetails>, Error> {
+pub async fn get_details_by_transaction_id(bank_transaction_id: i64, user: &User, conn: &mut Connection<DB>) -> Result<Vec<BudgetTransactionMappingDetails>, Error> {
 
     let sql = "\
             SELECT btm.id, btm.bank_transaction_id, btm.budget_id, b.title AS budget_title, \
                 btm.amount, btm.behavior \
             FROM budget_transaction_mapping btm \
                 JOIN budget b ON b.id = btm.budget_id \
-            WHERE btm.bank_transaction_id = ? \
+                JOIN bank_transaction bt ON bt.id = btm.bank_transaction_id \
+                JOIN bank_account ba ON ba.id = bt.bank_account_id \
+                JOIN bank_account_user bau ON bau.bank_account_id = ba.id \
+            WHERE bt.id = ? \
+                AND b.user_id = ? \
+                AND bau.user_id = ? \
         ";
 
     let query = sqlx::query_as::<_, BudgetTransactionMappingDetails>(sql)
-        .bind(bank_transaction_id);
+        .bind(bank_transaction_id)
+        .bind(user.id)
+        .bind(user.id);
 
     let details = query.fetch_all(get_executor_conn(conn)).await?;
     Ok(details)
@@ -86,7 +93,22 @@ pub async fn get_details_by_id(bank_transaction_mapping_id: i64, user: &User, co
     Ok(details)
 }
 
-pub async fn insert(bank_transaction: BankTransaction, budget: Budget, amount: i32, behavior: TransactionBehavior, txn: &mut Transaction<'_, MySql>) -> Result<i64, Error> {
+pub async fn find_all_by_transaction(transaction: &BankTransaction, conn: &mut Connection<DB>) -> Result<Vec<BudgetTransactionMapping>, Error> {
+
+    let sql = "\
+            SELECT btm.* \
+            FROM budget_transaction_mapping btm \
+            WHERE btm.bank_transaction_id = ? \
+        ";
+
+    let query = sqlx::query_as::<_, BudgetTransactionMapping>(sql)
+        .bind(transaction.id);
+
+    let mappings = query.fetch_all(get_executor_conn(conn)).await?;
+    Ok(mappings)
+}
+
+pub async fn insert(bank_transaction: &BankTransaction, budget: &Budget, amount: i32, behavior: TransactionBehavior, txn: &mut Transaction<'_, MySql>) -> Result<i64, Error> {
 
     let insert_sql = "\
             INSERT INTO budget_transaction_mapping \
@@ -108,15 +130,17 @@ pub async fn insert(bank_transaction: BankTransaction, budget: Budget, amount: i
     Ok(id as i64)
 }
 
-pub async fn update(budget_transaction_mapping: BudgetTransactionMapping, amount: i32, behavior: TransactionBehavior, txn: &mut Transaction<'_, MySql>) -> Result<(), Error> {
+pub async fn update(budget_transaction_mapping: BudgetTransactionMapping, transaction: &BankTransaction, budget: &Budget, amount: i32, behavior: TransactionBehavior, txn: &mut Transaction<'_, MySql>) -> Result<(), Error> {
 
     let insert_sql = "\
             UPDATE budget_transaction_mapping btm \
-            SET btm.amount = ?, btm.behavior = ? \
+            SET btm.bank_transaction_id = ?, btm.budget_id = ?, btm.amount = ?, btm.behavior = ? \
             WHERE btm.id = ? \
         ";
 
     let update_query = sqlx::query(insert_sql)
+        .bind(transaction.id)
+        .bind(budget.id)
         .bind(amount)
         .bind(behavior)
         .bind(budget_transaction_mapping.id.unwrap());

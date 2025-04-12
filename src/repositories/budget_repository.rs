@@ -1,14 +1,14 @@
 use chrono::NaiveDate;
 use rocket_db_pools::{Connection, Pool};
 
-use sqlx::{MySql, Error, query_as};
+use sqlx::{MySql, Error, query_as, Transaction};
 use sqlx::pool::PoolConnection;
 
 use crate::models::budget::Budget;
 use crate::models::DB;
 use crate::models::query::budget_details::BudgetDetails;
 use crate::models::users::User;
-use crate::repositories::repository_util::get_executor_conn;
+use crate::repositories::repository_util::{get_executor_conn, get_executor_txn};
 
 pub async fn find_by_id(id: i64, user: &User, conn: &mut Connection<DB>) -> Result<Budget, Error> {
     let sql = "\
@@ -22,6 +22,22 @@ pub async fn find_by_id(id: i64, user: &User, conn: &mut Connection<DB>) -> Resu
         .bind(user.id);
 
     let budget = query.fetch_one(get_executor_conn(conn)).await?;
+    Ok(budget)
+}
+
+// TODO: figure out a better way to handle this
+pub async fn find_by_id_txn(id: i64, user: &User, txn: &mut Transaction<'_, MySql>) -> Result<Budget, Error> {
+    let sql = "\
+            SELECT b.* FROM budget b \
+            WHERE b.id = ? \
+                AND b.user_id = ? \
+    ";
+
+    let query = sqlx::query_as::<_, Budget>(sql)
+        .bind(id)
+        .bind(user.id);
+
+    let budget = query.fetch_one(get_executor_txn(txn)).await?;
     Ok(budget)
 }
 

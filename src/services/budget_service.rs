@@ -6,7 +6,7 @@ use crate::models::data::application_error::ApplicationError;
 
 use crate::models::budget::BudgetHistory;
 use crate::models::budget_transaction_mapping::TransactionBehavior;
-use crate::models::data::budgets_by_classification::BudgetsByClassification;
+use crate::models::query::budgets_by_classification::BudgetsByClassification;
 use crate::models::DB;
 use crate::models::query::budget_state::BudgetState;
 use crate::models::query::budget_details::BudgetDetails;
@@ -161,7 +161,7 @@ pub async fn find_budgets_by_user_grouped_by_classification(
     Ok(budgets_by_classification_list)
 }
 
-pub async fn get_budget_details_list_by_user_and_month(user: &User, year: i32, month: u32, conn: &mut Connection<DB>) -> Result<Vec<BudgetDetails>, ApplicationError> {
+pub async fn find_budget_details_by_user_and_month(user: &User, year: i32, month: u32, conn: &mut Connection<DB>) -> Result<Vec<BudgetDetails>, ApplicationError> {
     let (begin_date, end_date) = date_util::get_date_range(year, month)?;
     let budget_details_list = budget_repository::get_details_list_for_user_and_time_period(user, begin_date, end_date, conn).await?;
     Ok(budget_details_list)
