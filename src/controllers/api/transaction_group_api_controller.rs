@@ -7,6 +7,7 @@ use crate::models::users::User;
 use crate::services::bank_transaction_service;
 use crate::util::date_util;
 
+#[deprecated] // not used by new front end
 #[get("/secure/api/transaction-group/top-by-budget/<budget_id>/<limit>/<year>/<month>")]
 pub async fn get_top_transaction_groups_by_category(budget_id: i64, limit: i32, year: i32, month: u32, user: User, mut conn: Connection<DB>) -> Json<Vec<TransactionGroup>> {
     let (begin_date, end_date) = date_util::get_date_range(year, month).unwrap();

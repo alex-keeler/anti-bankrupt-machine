@@ -64,6 +64,9 @@ fn rocket() -> Rocket<Build> {
             // controllers::budget_dashboard_controller::get_dashboard,
             // controllers::cash_flow_dashboard_controller::get_dashboard,
             controllers::api::login_api_controller::login,
+            controllers::api::budget_api_controller::get_budget_states,
+            controllers::api::budget_api_controller::get_budget_details,
+            controllers::api::budget_api_controller::get_budgets_grouped_by_classification,
             controllers::api::update_transaction_api_controller::set_user_description,
             controllers::api::update_transaction_api_controller::set_comment,
             controllers::api::cash_flow_api_controller::get_cash_flow_data,
@@ -71,6 +74,11 @@ fn rocket() -> Rocket<Build> {
             controllers::api::update_budget_transaction_mapping_api_controller::add_budget_transaction_mapping,
             controllers::api::update_budget_transaction_mapping_api_controller::remove_budget_transaction_mapping,
             controllers::api::update_budget_transaction_mapping_api_controller::update_budget_transaction_mapping,
+            controllers::api::transaction_api_controller::get_transaction_list,
+            controllers::api::transaction_api_controller::get_top_transactions_by_budget,
+            controllers::api::transaction_api_controller::assign_budget_transaction_mappings,
+            controllers::api::bank_account_api_controller::get_editable_bank_accounts,
+            controllers::api::bank_record_api_controller::upload_post,
         ])
         .mount("/static", routes![static_files])
         .register("/", catchers![
@@ -78,11 +86,6 @@ fn rocket() -> Rocket<Build> {
         ])
         .attach(AdHoc::config::<configuration::AppConfig>())
         .attach(cors.to_cors().unwrap())
-        .attach(Template::custom(|engines| {
-            engines.tera.register_function("format_amount", extensions::format_amount_extension::build());
-            engines.tera.register_function("min", extensions::minimum_extension::build());
-            engines.tera.register_function("max", extensions::maximum_extension::build());
-        }))
         .attach(DB::init())
         .attach(AdHoc::try_on_ignite("DB Migrations", run_migrations))
 }

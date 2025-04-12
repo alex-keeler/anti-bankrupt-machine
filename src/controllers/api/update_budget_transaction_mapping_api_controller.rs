@@ -6,6 +6,7 @@ use crate::models::query::budget_transaction_mapping_details::BudgetTransactionM
 use crate::models::users::User;
 use crate::services::bank_transaction_service;
 
+#[deprecated] // replaced by transaction_api_controller::assign_budget_transaction_mappings
 #[post("/secure/api/budget-transaction-mapping/add/<transaction_id>/<budget_id>?<amount>&<behavior>")]
 pub async fn add_budget_transaction_mapping(
     transaction_id: i64, budget_id: i64, user: User, mut conn: Connection<DB>, amount: i32,
@@ -17,6 +18,7 @@ pub async fn add_budget_transaction_mapping(
     Json(mapping_details)
 }
 
+#[deprecated] // replaced by transaction_api_controller::assign_budget_transaction_mappings
 #[post("/secure/api/budget-transaction-mapping/remove/<budget_transaction_mapping_id>")]
 pub async fn remove_budget_transaction_mapping(
     budget_transaction_mapping_id: i64, user: User, mut conn: Connection<DB>
@@ -24,6 +26,7 @@ pub async fn remove_budget_transaction_mapping(
     bank_transaction_service::remove_budget_transaction_mapping(budget_transaction_mapping_id, &user, &mut conn).await.unwrap();
 }
 
+#[deprecated] // replaced by transaction_api_controller::assign_budget_transaction_mappings
 #[post("/secure/api/budget-transaction-mapping/update/<budget_transaction_mapping_id>?<amount>&<behavior>")]
 pub async fn update_budget_transaction_mapping(
     budget_transaction_mapping_id: i64, amount: i32, behavior: TransactionBehavior, user: User, mut conn: Connection<DB>
