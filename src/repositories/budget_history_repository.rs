@@ -1,11 +1,13 @@
 use chrono::NaiveDate;
+use rocket_db_pools::Connection;
 
-use sqlx::{MySql, Error, query_as};
-use sqlx::pool::PoolConnection;
+use sqlx::{Error, query_as};
 
 use crate::models::budget::{Budget, BudgetHistory};
+use crate::models::DB;
+use crate::repositories::repository_util::get_executor_conn;
 
-pub async fn find_applicable_by_budget(budget: &Budget, begin_date: &NaiveDate, end_date: &NaiveDate, conn: &mut PoolConnection<MySql>) -> Result<Vec<BudgetHistory>, Error> {
+pub async fn find_applicable_by_budget(budget: &Budget, begin_date: &NaiveDate, end_date: &NaiveDate, conn: &mut Connection<DB>) -> Result<Vec<BudgetHistory>, Error> {
     let sql = "\
             SELECT bh.* \
             FROM budget b \
@@ -21,6 +23,6 @@ pub async fn find_applicable_by_budget(budget: &Budget, begin_date: &NaiveDate, 
         .bind(begin_date)
         .bind(end_date);
 
-    let history_list = query.fetch_all(conn).await?;
+    let history_list = query.fetch_all(get_executor_conn(conn)).await?;
     Ok(history_list)
 }

@@ -4,9 +4,9 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Debug, FromRow, Serialize, Deserialize)]
 pub struct BudgetTransactionMapping {
-    pub id: Option<i32>,
-    pub budget_id: i32,
-    pub bank_transaction_id: i32,
+    pub id: Option<i64>,
+    pub budget_id: i64,
+    pub bank_transaction_id: i64,
     pub amount: i32,
     pub behavior: TransactionBehavior,
 }
