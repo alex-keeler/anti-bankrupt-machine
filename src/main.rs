@@ -3,7 +3,7 @@ extern crate rocket;
 
 use std::path::{Path, PathBuf};
 
-use rocket::{Build, fairing, Rocket};
+use rocket::{Build, fairing, Rocket, Config};
 use rocket::fairing::AdHoc;
 use rocket::fs::NamedFile;
 use rocket::http::Method;
@@ -11,6 +11,7 @@ use rocket::response::Redirect;
 use rocket_db_pools::Database;
 use rocket_dyn_templates::Template;
 use rocket_cors::{AllowedOrigins, CorsOptions};
+use configuration::AppConfig;
 
 use crate::models::DB;
 use crate::models::users::User;
@@ -40,8 +41,12 @@ async fn static_files(file: PathBuf) -> Option<NamedFile> {
 #[launch]
 fn rocket() -> Rocket<Build> {
 
+    let config = Config::figment();
+
+    let allowed_origin = config.find_value("allowed_origin").unwrap();
+
     let cors = CorsOptions::default()
-        .allowed_origins(AllowedOrigins::some_exact(&["http://localhost:5173"]))
+        .allowed_origins(AllowedOrigins::some_exact(&[allowed_origin.as_str().unwrap()]))
         .allowed_methods(
             vec![Method::Get, Method::Post]
                 .into_iter()
@@ -63,6 +68,7 @@ fn rocket() -> Rocket<Build> {
             // controllers::transaction_dashboard_controller::get_dashboard,
             // controllers::budget_dashboard_controller::get_dashboard,
             // controllers::cash_flow_dashboard_controller::get_dashboard,
+            controllers::api::status_api_controller::report_status,
             controllers::api::login_api_controller::login,
             controllers::api::budget_api_controller::get_budget_states,
             controllers::api::budget_api_controller::get_budget_details,
@@ -84,7 +90,7 @@ fn rocket() -> Rocket<Build> {
         .register("/", catchers![
             //controllers::catchers::unauthorized_catcher::redirect_or_access_denied,
         ])
-        .attach(AdHoc::config::<configuration::AppConfig>())
+        .attach(AdHoc::config::<AppConfig>())
         .attach(cors.to_cors().unwrap())
         .attach(DB::init())
         .attach(AdHoc::try_on_ignite("DB Migrations", run_migrations))

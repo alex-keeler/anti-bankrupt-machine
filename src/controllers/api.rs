@@ -7,3 +7,4 @@ pub mod budget_api_controller;
 pub mod transaction_api_controller;
 pub mod bank_account_api_controller;
 pub mod bank_record_api_controller;
+pub mod status_api_controller;
