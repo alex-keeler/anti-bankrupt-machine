@@ -1,6 +1,0 @@
-{% extends "layout/general-layout" %}
-
-{% block content %}
-    <h1>Dashboard</h1>
-    <p>Welcome, {{ user.first_name }}!</p>
-{% endblock %}
