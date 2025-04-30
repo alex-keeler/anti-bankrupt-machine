@@ -1,15 +1,15 @@
-use std::error::Error;
-
-use rocket::fs::TempFile;
+use std::path::Path;
 use sqlx::types::chrono::NaiveDate;
 
 use crate::models::data::bank_record_report::BankRecordReport;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
 use crate::models::data::application_error::ApplicationError;
-use crate::services::converters::BankRecordConverter;
+use crate::services::converters::{converter_util, BankRecordConverter};
 
 pub struct ElanFinancialCsvConverter;
+
+const EXPECTED_HEADERS: [&'static str; 5] = ["Date", "Transaction", "Name", "Memo", "Amount"];
 
 const DATE_FIELD: usize = 0;
 // const TRANSACTION_TYPE_FIELD = 1;
@@ -18,8 +18,8 @@ const BANK_DESCRIPTION_FIELD: usize = 2;
 const AMOUNT_FIELD: usize = 4;
 
 impl BankRecordConverter<'_> for ElanFinancialCsvConverter {
-    fn convert(&self, file: &TempFile<'_>, bank_account: &BankAccount) -> Result<BankRecordReport, ApplicationError> {
-        let transactions = parse_data(file, bank_account)?;
+    fn convert(&self, path: &Path, bank_account: &BankAccount) -> Result<BankRecordReport, ApplicationError> {
+        let transactions = parse_data(path, bank_account)?;
 
         if transactions.is_empty() {
             return Ok(BankRecordReport::empty());
@@ -38,18 +38,19 @@ impl BankRecordConverter<'_> for ElanFinancialCsvConverter {
 }
 
 
-// TODO: proper error handling using results
-fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<BankTransaction>, ApplicationError> {
-    let mut reader = csv::Reader::from_path(file.path().unwrap()).unwrap();
+fn parse_data(path: &Path, bank_account: &BankAccount) -> Result<Vec<BankTransaction>, ApplicationError> {
+    let mut reader = csv::Reader::from_path(path)?;
+
+    converter_util::verify_headers(reader.headers()?, Box::new(&EXPECTED_HEADERS))?;
 
     let mut transactions: Vec<BankTransaction> = Vec::new();
 
     for result in reader.records() {
         let record = result?;
 
-        let date = NaiveDate::parse_from_str(record.get(DATE_FIELD).ok_or("could not get date field").unwrap(), "%Y-%m-%d").unwrap();
-        let bank_description = record.get(BANK_DESCRIPTION_FIELD).ok_or("could not get bank field").unwrap();
-        let amount = parse_amount_from_str(record.get(AMOUNT_FIELD).ok_or("could not get amount field").unwrap()).unwrap();
+        let date = NaiveDate::parse_from_str(record.get(DATE_FIELD).ok_or("could not get date field")?, "%Y-%m-%d").or(Err("could not parse date field"))?;
+        let bank_description = record.get(BANK_DESCRIPTION_FIELD).ok_or("could not get bank field")?;
+        let amount = parse_amount_from_str(record.get(AMOUNT_FIELD).ok_or("could not get amount field")?)?;
 
         let transaction = BankTransaction {
             id: None,
@@ -61,14 +62,13 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
             bank_account_id: bank_account.id.unwrap(),
         };
 
-        println!("{:?}", record);
         transactions.push(transaction);
     }
 
     Ok(transactions)
 }
 
-fn parse_amount_from_str(amount: &str) -> Result<i32, Box<dyn Error>> {
+fn parse_amount_from_str(amount: &str) -> Result<i32, ApplicationError> {
 
     let amount = normalize_decimal(amount)
         .replace(",", "")

@@ -1,7 +1,4 @@
-use std::error::Error;
 use rocket_db_pools::Connection;
-use sqlx::MySql;
-use sqlx::pool::PoolConnection;
 use crate::models::bank_account_users::BankAccountUserRole;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::data::application_error::ApplicationError;

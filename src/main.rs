@@ -1,19 +1,14 @@
 #[macro_use]
 extern crate rocket;
 
-use std::path::{Path, PathBuf};
-
 use rocket::{Build, fairing, Rocket, Config};
 use rocket::fairing::AdHoc;
-use rocket::fs::NamedFile;
 use rocket::http::Method;
-use rocket::response::Redirect;
 use rocket_db_pools::Database;
 use rocket_cors::{AllowedOrigins, CorsOptions};
 use configuration::AppConfig;
 
 use crate::models::DB;
-use crate::models::users::User;
 
 mod configuration;
 mod controllers;
@@ -26,12 +21,11 @@ mod tests;
 #[launch]
 fn rocket() -> Rocket<Build> {
 
-    let config = Config::figment();
-
-    let allowed_origin = config.find_value("allowed_origin").unwrap();
+    // let config = Config::figment();
+    // let allowed_origin = config.find_value("allowed_origin").unwrap();
 
     let cors = CorsOptions::default()
-        .allowed_origins(AllowedOrigins::some_exact(&[allowed_origin.as_str().unwrap()]))
+        .allowed_origins(AllowedOrigins::some_regex(&[r"(192\.168\..*)", r"(localhost.*)", r"(127\.0\.0\.1.*)"]))
         .allowed_methods(
             vec![Method::Get, Method::Post]
                 .into_iter()

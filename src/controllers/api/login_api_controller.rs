@@ -3,7 +3,7 @@ use rocket::State;
 use rocket_db_pools::Connection;
 use crate::configuration::AppConfig;
 use crate::models::data::application_error::ApplicationError;
-use crate::models::data::application_error::ApplicationError::{AuthenticationError, ServiceError};
+use crate::models::data::application_error::ApplicationError::AuthenticationError;
 use crate::models::DB;
 use crate::services::{user_service, user_token_service};
 use crate::services::user_token_service::UserClaims;

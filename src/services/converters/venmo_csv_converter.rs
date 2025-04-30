@@ -1,15 +1,20 @@
-use std::error::Error;
-
-use rocket::fs::TempFile;
+use std::path::Path;
 use sqlx::types::chrono::NaiveDate;
 
 use crate::models::data::bank_record_report::BankRecordReport;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
 use crate::models::data::application_error::ApplicationError;
-use crate::services::converters::BankRecordConverter;
+use crate::services::converters::{converter_util, BankRecordConverter};
 
 pub struct VenmoCsvConverter;
+
+const EXPECTED_HEADERS: [&'static str; 22] = [
+    "", "ID", "Datetime", "Type", "Status", "Note", "From", "To", "Amount (total)", "Amount (tip)",
+    "Amount (tax)", "Amount (fee)", "Tax Rate", "Tax Exempt", "Funding Source", "Destination",
+    "Beginning Balance", "Ending Balance", "Statement Period Venmo Fees", "Terminal Location",
+    "Year to Date Venmo Fees", "Disclaimer"
+];
 
 // const ID_FIELD: usize = 1;
 const DATETIME_FIELD: usize = 2;
@@ -34,8 +39,8 @@ const AMOUNT_FIELD: usize = 8;
 // const DISCLAIMER_FIELD: usize = 21;
 
 impl BankRecordConverter<'_> for VenmoCsvConverter {
-    fn convert(&self, file: &TempFile<'_>, bank_account: &BankAccount) -> Result<BankRecordReport, ApplicationError> {
-        let transactions = parse_data(file, bank_account)?;
+    fn convert(&self, path: &Path, bank_account: &BankAccount) -> Result<BankRecordReport, ApplicationError> {
+        let transactions = parse_data(path, bank_account)?;
 
         if transactions.is_empty() {
             return Ok(BankRecordReport::empty());
@@ -57,8 +62,8 @@ impl BankRecordConverter<'_> for VenmoCsvConverter {
 
 
 // TODO: proper error handling using results
-fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<BankTransaction>, ApplicationError> {
-    let mut reader = csv::Reader::from_path(file.path().unwrap()).unwrap();
+fn parse_data(path: &Path, bank_account: &BankAccount) -> Result<Vec<BankTransaction>, ApplicationError> {
+    let mut reader = csv::Reader::from_path(path)?;
 
     let mut transactions: Vec<BankTransaction> = Vec::new();
 
@@ -67,13 +72,15 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
         records.push(record?);
     }
 
+    converter_util::verify_headers(&records[1], Box::new(&EXPECTED_HEADERS))?;
+
     for record in &records[3..records.len() - 1] {
-        let date = NaiveDate::parse_from_str(record.get(DATETIME_FIELD).ok_or("could not get date field").unwrap(), "%Y-%m-%dT%H:%M:%S").unwrap();
-        let title = record.get(TITLE_FIELD).ok_or("could not get title field").unwrap().trim();
-        let payment_type = record.get(PAYMENT_TYPE_FIELD).ok_or("could not get payment type field").unwrap().trim();
-        let from = record.get(FROM_FIELD).ok_or("could not get from field").unwrap().trim();
-        let to = record.get(TO_FIELD).ok_or("could not get to field").unwrap().trim();
-        let amount = parse_amount_from_str(record.get(AMOUNT_FIELD).ok_or("could not get amount field").unwrap()).unwrap();
+        let date = NaiveDate::parse_from_str(record.get(DATETIME_FIELD).ok_or("could not get date field")?, "%Y-%m-%dT%H:%M:%S").or(Err("could not parse date field"))?;
+        let title = record.get(TITLE_FIELD).ok_or("could not get title field")?.trim();
+        let payment_type = record.get(PAYMENT_TYPE_FIELD).ok_or("could not get payment type field")?.trim();
+        let from = record.get(FROM_FIELD).ok_or("could not get from field")?.trim();
+        let to = record.get(TO_FIELD).ok_or("could not get to field")?.trim();
+        let amount = parse_amount_from_str(record.get(AMOUNT_FIELD).ok_or("could not get amount field")?)?;
 
         let comment = format!("{} from {} to {}", payment_type, from, to);
 
@@ -87,7 +94,6 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
             bank_account_id: bank_account.id.unwrap(),
         };
 
-        println!("{:?}", record);
         transactions.push(transaction);
     }
 

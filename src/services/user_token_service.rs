@@ -1,5 +1,5 @@
 use std::time::{SystemTime, UNIX_EPOCH};
-use jsonwebtoken::{Algorithm, decode, DecodingKey, encode, EncodingKey, Header, Validation, decode_header};
+use jsonwebtoken::{Algorithm, decode, DecodingKey, encode, EncodingKey, Header, Validation};
 use jsonwebtoken::errors::Error;
 use rocket::serde::{Deserialize, Serialize};
 use rocket::{State};

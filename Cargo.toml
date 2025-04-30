@@ -6,16 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-grass = "0.13.2"
 argon2 = "0.5.0"
 csv = "1.2.2"
 regex = "1.9.1"
-num-format = "0.4.4"
-scraper = "0.19.0"
-mockall = "0.12.1"
-dotenv = "0.15.0"
 jsonwebtoken = "9"
 rocket_cors = "0.6.0"
+tempfile = "3"
 
 [dependencies.rocket]
 version = "0.5.1"

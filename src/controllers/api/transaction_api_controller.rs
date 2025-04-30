@@ -4,7 +4,6 @@ use crate::models::budget_transaction_mapping::BudgetTransactionMapping;
 use crate::models::data::application_error::ApplicationError;
 use crate::models::query::full_transaction_details::FullTransactionDetails;
 use crate::models::DB;
-use crate::models::query::budget_state::BudgetState;
 use crate::models::query::budget_transaction_mapping_details::BudgetTransactionMappingDetails;
 use crate::models::query::transaction_details::TransactionDetails;
 use crate::models::users::User;

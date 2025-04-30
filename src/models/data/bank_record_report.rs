@@ -2,6 +2,7 @@ use chrono::NaiveDate;
 
 use crate::models::bank_transactions::BankTransaction;
 
+#[derive(Debug, PartialEq)]
 pub struct BankRecordReport {
     pub transactions: Vec<BankTransaction>,
     pub begin_date: Option<NaiveDate>,

@@ -1,11 +1,9 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::HashMap;
 use std::error::Error;
-
+use std::path::Path;
 use chrono::NaiveDate;
-use rocket::fs::TempFile;
-use rocket::http::ext::IntoCollection;
-use rocket_db_pools::{Connection, Pool};
-use rocket_dyn_templates::tera::ast::Set;
+use rocket::http::ContentType;
+use rocket_db_pools::Connection;
 use sqlx::{Acquire};
 use crate::models::data::application_error::ApplicationError;
 
@@ -25,11 +23,11 @@ use crate::services::converters::BankRecordConverterFactory;
 use crate::services::factories::Factory;
 use crate::util::{bank_record_util, date_util};
 
-pub async fn import_bank_record_file(file: &TempFile<'_>, _user: User, bank_account: BankAccount, conn: &mut Connection<DB>) -> Result<(), ApplicationError> {
+pub async fn import_bank_record_file(path: &Path, content_type: &ContentType, _user: User, bank_account: BankAccount, conn: &mut Connection<DB>) -> Result<(), ApplicationError> {
 
-    let report = BankRecordConverterFactory::get_instance((&bank_account.bank, file))
+    let report = BankRecordConverterFactory::get_instance((&bank_account.bank, path, content_type))
         .ok_or("no supporting handler found")?
-        .convert(file, &bank_account)?;
+        .convert(path, &bank_account)?;
 
     validate_bank_record_report(&report)?;
 

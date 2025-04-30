@@ -1,27 +1,26 @@
-use std::error::Error;
-
-use rocket::fs::TempFile;
+use std::path::Path;
 use sqlx::types::chrono::NaiveDate;
 
 use crate::models::data::bank_record_report::BankRecordReport;
 use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
 use crate::models::data::application_error::ApplicationError;
-use crate::services::converters::BankRecordConverter;
+use crate::services::converters::{converter_util, BankRecordConverter};
 
 pub struct HuntingtonCsvConverter;
+
+const EXPECTED_HEADERS: [&'static str; 6] = ["Date", "Description", "Category", "Amount", "Split", "Tags"];
 
 const DATE_FIELD: usize = 0;
 const BANK_DESCRIPTION_FIELD: usize = 1;
 // const CATEGORY_FIELD: usize = 2;
 const AMOUNT_FIELD: usize = 3;
-// const SPLIT_FIELD: usize = 5;
-// const TAGS_FIELD: usize = 6;
+// const SPLIT_FIELD: usize = 4;
+// const TAGS_FIELD: usize = 5;
 
-// TODO: implement
 impl BankRecordConverter<'_> for HuntingtonCsvConverter {
-    fn convert(&self, file: &TempFile<'_>, bank_account: &BankAccount) -> Result<BankRecordReport, ApplicationError> {
-        let transactions = parse_data(file, bank_account)?;
+    fn convert(&self, path: &Path, bank_account: &BankAccount) -> Result<BankRecordReport, ApplicationError> {
+        let transactions = parse_data(path, bank_account)?;
 
         if transactions.is_empty() {
             return Ok(BankRecordReport::empty());
@@ -39,9 +38,10 @@ impl BankRecordConverter<'_> for HuntingtonCsvConverter {
     }
 }
 
-// TODO: proper error handling using results
-fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<BankTransaction>, ApplicationError> {
-    let mut reader = csv::Reader::from_path(file.path().unwrap())?;
+fn parse_data(path: &Path, bank_account: &BankAccount) -> Result<Vec<BankTransaction>, ApplicationError> {
+    let mut reader = csv::Reader::from_path(path)?;
+
+    converter_util::verify_headers(reader.headers()?, Box::new(&EXPECTED_HEADERS))?;
 
     let mut transactions: Vec<BankTransaction> = Vec::new();
     for result in reader.records() {
@@ -61,7 +61,6 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
             bank_account_id: bank_account.id.unwrap(),
         };
 
-        println!("{:?}", record);
         transactions.push(transaction);
     }
 
@@ -69,9 +68,12 @@ fn parse_data(file: &TempFile<'_>, bank_account: &BankAccount) -> Result<Vec<Ban
 }
 
 fn parse_amount_from_str(amount: &str) -> Result<i32, ApplicationError> {
+    let decimal_index = amount.find('.');
+    let digits_after_decimal = if decimal_index.is_some() { amount.len() - decimal_index.unwrap() - 1 } else { 0 };
+
     let amount = amount.replace(".", "")
         .trim()
-        .parse()?;
+        .parse::<i32>()? * 10_i32.pow(2 - digits_after_decimal as u32);
 
     Ok(amount)
 }

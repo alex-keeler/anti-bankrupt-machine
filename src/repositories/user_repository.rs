@@ -1,6 +1,5 @@
 use rocket_db_pools::{sqlx, Connection};
-use sqlx::{Error, MySql};
-use sqlx::pool::PoolConnection;
+use sqlx::Error;
 use crate::models::users::User;
 use crate::models::DB;
 use crate::repositories::repository_util::get_executor_conn;
