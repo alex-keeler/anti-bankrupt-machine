@@ -9,7 +9,6 @@ use crate::models::bank_transactions::BankTransaction;
 use crate::models::budget::Budget;
 use crate::models::DB;
 use crate::models::query::transaction_details::TransactionDetails;
-use crate::models::query::transaction_group::TransactionGroup;
 use crate::models::users::User;
 use crate::repositories::repository_util::{get_executor_conn, get_executor_txn};
 
@@ -62,32 +61,6 @@ pub async fn insert(transaction: BankTransaction, txn: &mut Transaction<'_, MySq
     let _ = query.execute(get_executor_txn(txn)).await?;
 
     Ok(())
-}
-
-pub async fn get_transaction_details_by_user(user: &User, conn: &mut Connection<DB>) -> Result<Vec<TransactionDetails>, Error> {
-
-    let sql = "\
-            SELECT bt.id, bt.date, bt.bank_description, bt.user_description, bt.comment, \
-                   bt.amount, ba.title AS bank_account_title, \
-                   CAST(COUNT(btm.id) AS UNSIGNED) AS count_budget_mappings, \
-                   CASE WHEN COUNT(btm.id) = 1 THEN \
-                        (SELECT title FROM budget b WHERE b.id = MIN(btm.budget_id)) \
-                   ELSE NULL END AS single_budget_title \
-            FROM users u \
-                JOIN bank_account_user bau ON bau.user_id = u.id \
-                JOIN bank_account ba ON ba.id = bau.bank_account_id \
-                JOIN bank_transaction bt ON bt.bank_account_id = ba.id \
-                LEFT JOIN budget_transaction_mapping btm ON btm.bank_transaction_id = bt.id \
-            WHERE u.id = ? \
-            GROUP BY bt.id \
-            ORDER BY bt.date DESC, bt.id ASC \
-    ";
-
-    let query = sqlx::query_as::<_, TransactionDetails>(sql)
-        .bind(user.id);
-
-    let transaction_details = query.fetch_all(get_executor_conn(conn)).await?;
-    Ok(transaction_details)
 }
 
 pub async fn get_transaction_details_by_user_and_time_period(user: &User, begin_date: NaiveDate, end_date: NaiveDate, conn: &mut Connection<DB>) -> Result<Vec<TransactionDetails>, Error> {
@@ -238,55 +211,6 @@ pub async fn get_top_transactions_for_budget_and_month(
     let transactions = query.fetch_all(get_executor_conn(conn)).await?;
 
     Ok(transactions)
-}
-
-pub async fn get_top_transaction_groups_for_budget(budget: Budget, limit: i32, begin_date: Option<NaiveDate>, end_date: Option<NaiveDate>, user: &User, conn: &mut Connection<DB>) -> Result<Vec<TransactionGroup>, Error> {
-
-    let mut sql = String::from("\
-            SELECT bt.bank_description, CAST(SUM(bt.amount) AS SIGNED) AS total_amount, COUNT(bt.id) AS count \
-            FROM bank_transaction bt \
-                JOIN budget_transaction_mapping btm ON btm.bank_transaction_id = bt.id \
-                JOIN budget b ON b.id = btm.budget_id \
-                JOIN bank_account ba ON ba.id = bt.bank_account_id \
-                JOIN bank_account_user bau ON bau.bank_account_id = ba.id \
-                JOIN users u ON u.id = bau.user_id \
-            WHERE b.id = ? \
-                AND u.id = ? \
-    ");
-
-    if let Some(_) = &begin_date {
-        sql = sql + format!(" AND bt.date >= ? ").as_str();
-    }
-
-    if let Some(_) = &end_date {
-        sql = sql + format!(" AND bt.date < ? ").as_str();
-    }
-
-    sql = sql + "\
-                GROUP BY bt.bank_description \
-                ORDER BY SUM(bt.amount) \
-                LIMIT ? \
-            ";
-
-    // sorted by ascending amount since results are negative
-
-    let mut query = sqlx::query_as::<_, TransactionGroup>(sql.as_str())
-        .bind(budget.id)
-        .bind(user.id);
-
-    if let Some(begin_date) = &begin_date {
-        query = query.bind(begin_date);
-    }
-
-    if let Some(end_date) = &end_date {
-        query = query.bind(end_date);
-    }
-
-    query = query.bind(limit);
-
-    let transaction_groups = query.fetch_all(get_executor_conn(conn)).await?;
-
-    Ok(transaction_groups)
 }
 
 pub async fn get_amount_spent_unbudgeted_for_user_and_time_period(user: &User, begin_date: NaiveDate, end_date: NaiveDate, conn: &mut Connection<DB>) -> Result<i32, Error> {

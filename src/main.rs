@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
-use rocket::{Build, fairing, Rocket, Config};
+use rocket::{Build, fairing, Rocket};
 use rocket::fairing::AdHoc;
 use rocket::http::Method;
 use rocket_db_pools::Database;

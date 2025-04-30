@@ -27,25 +27,13 @@ pub trait BankRecordConverter<'a> {
 
 pub struct BankRecordConverterFactory;
 
-impl<'a, 'b, 'c> Factory<(&'a Bank, &'b Path, &'c ContentType), Box<dyn BankRecordConverter<'a>>> for BankRecordConverterFactory {
-    fn get_instance(key: (&'a Bank, &'b Path, &'c ContentType)) -> Option<Box<dyn BankRecordConverter<'a>>> {
+impl<'a, 'b, 'c> Factory<(&'a Bank, &'b str, &'c ContentType), Box<dyn BankRecordConverter<'a>>> for BankRecordConverterFactory {
+    fn get_instance((bank, filename, content_type): (&'a Bank, &'b str, &'c ContentType)) -> Option<Box<dyn BankRecordConverter<'a>>> {
 
-        let bank_account = key.0;
-        let path = key.1;
-        let content_type = key.2;
-
-        if path.file_name().is_none() {
-            return None;
-        }
-
-        let filename = path.file_name().unwrap().to_str().unwrap();
-
-        println!("filename: {:?}", filename);
-
-        match bank_account {
+        match bank {
             Bank::IndependentBank => {
                 if content_type == &ContentType::CSV {
-                    let filename_regex = Regex::new(r"export_\d{8}.*\.csv").unwrap();
+                    let filename_regex = Regex::new(r"export_\d{8}.*").unwrap();
                     if filename_regex.is_match(filename) {
                         return Some(Box::new(IndependentBankCsvConverter));
                     }
@@ -54,7 +42,7 @@ impl<'a, 'b, 'c> Factory<(&'a Bank, &'b Path, &'c ContentType), Box<dyn BankReco
             }
             Bank::ElanFinancial => {
                 if content_type == &ContentType::CSV {
-                    let filename_regex = Regex::new(r"^Credit Card - \d{4}_\d{2}-\d{2}-\d{4}_\d{2}-\d{2}-\d{4}.*\.csv$").unwrap();
+                    let filename_regex = Regex::new(r"^Credit Card - \d{4}_\d{2}-\d{2}-\d{4}_\d{2}-\d{2}-\d{4}.*$").unwrap();
                     if filename_regex.is_match(filename) {
                         return Some(Box::new(ElanFinancialCsvConverter));
                     }
@@ -63,7 +51,7 @@ impl<'a, 'b, 'c> Factory<(&'a Bank, &'b Path, &'c ContentType), Box<dyn BankReco
             }
             Bank::Venmo => {
                 if content_type == &ContentType::CSV {
-                    let filename_regex = Regex::new(r"^VenmoStatement_[A-Z][a-z]+_\d{4}.*\.csv$").unwrap();
+                    let filename_regex = Regex::new(r"^VenmoStatement_[A-Z][a-z]+_\d{4}.*$").unwrap();
                     if filename_regex.is_match(filename) {
                         return Some(Box::new(VenmoCsvConverter));
                     }
@@ -72,7 +60,7 @@ impl<'a, 'b, 'c> Factory<(&'a Bank, &'b Path, &'c ContentType), Box<dyn BankReco
             }
             Bank::AmericanExpressSavings => {
                 if content_type == &ContentType::CSV {
-                    let filename_regex = Regex::new(r"^transactions.*\.CSV$").unwrap();
+                    let filename_regex = Regex::new(r"^transactions.*$").unwrap();
                     if filename_regex.is_match(filename) {
                         return Some(Box::new(AmericanExpressSavingsCsvConverter));
                     }
@@ -81,7 +69,7 @@ impl<'a, 'b, 'c> Factory<(&'a Bank, &'b Path, &'c ContentType), Box<dyn BankReco
             }
             Bank::AmericanExpressCredit => {
                 if content_type == &ContentType::CSV {
-                    let filename_regex = Regex::new(r"^activity.*\.csv$").unwrap();
+                    let filename_regex = Regex::new(r"^activity.*$").unwrap();
                     if filename_regex.is_match(filename) {
                         return Some(Box::new(AmericanExpressCreditCsvConverter));
                     }
@@ -90,7 +78,7 @@ impl<'a, 'b, 'c> Factory<(&'a Bank, &'b Path, &'c ContentType), Box<dyn BankReco
             }
             Bank::Huntington => {
                 if content_type == &ContentType::CSV {
-                    let filename_regex = Regex::new(r"^Transactions_\d{2}-\d{2}-\d{4}.*\.csv$").unwrap();
+                    let filename_regex = Regex::new(r"^Transactions_\d{2}-\d{2}-\d{4}.*$").unwrap();
                     if filename_regex.is_match(filename) {
                         return Some(Box::new(HuntingtonCsvConverter));
                     }

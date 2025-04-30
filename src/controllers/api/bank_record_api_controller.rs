@@ -22,8 +22,7 @@ pub async fn upload_post(mut form: Form<Upload<'_>>, user: User, mut conn: Conne
 
     let bank_account = bank_service::find_account_by_id(form.bank_account_id, &mut conn).await?;
 
-    bank_transaction_service::import_bank_record_file(temp_file.path(), form.file.content_type().ok_or("No content type found")?, user, bank_account, &mut conn).await?;
-
+    bank_transaction_service::import_bank_record_file(temp_file.path(), form.file.name().ok_or("Could not get filename")?, form.file.content_type().ok_or("No content type found")?, user, bank_account, &mut conn).await?;
 
     Ok(())
 }

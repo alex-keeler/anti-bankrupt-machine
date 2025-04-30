@@ -69,30 +69,6 @@ pub async fn get_details_by_transaction_id(bank_transaction_id: i64, user: &User
     Ok(details)
 }
 
-pub async fn get_details_by_id(bank_transaction_mapping_id: i64, user: &User, conn: &mut Connection<DB>) -> Result<BudgetTransactionMappingDetails, Error> {
-
-    let sql = "\
-            SELECT btm.id, btm.bank_transaction_id, btm.budget_id, b.title AS budget_title, \
-                btm.amount, btm.behavior \
-            FROM budget_transaction_mapping btm \
-                JOIN budget b ON b.id = btm.budget_id \
-                JOIN bank_transaction bt ON bt.id = btm.bank_transaction_id \
-                JOIN bank_account ba ON ba.id = bt.bank_account_id \
-                JOIN bank_account_user bau ON bau.bank_account_id = ba.id \
-            WHERE btm.id = ? \
-                AND b.user_id = ? \
-                AND bau.user_id = ? \
-        ";
-
-    let query = sqlx::query_as::<_, BudgetTransactionMappingDetails>(sql)
-        .bind(bank_transaction_mapping_id)
-        .bind(user.id)
-        .bind(user.id);
-
-    let details = query.fetch_one(get_executor_conn(conn)).await?;
-    Ok(details)
-}
-
 pub async fn find_all_by_transaction(transaction: &BankTransaction, conn: &mut Connection<DB>) -> Result<Vec<BudgetTransactionMapping>, Error> {
 
     let sql = "\
@@ -174,30 +150,4 @@ pub async fn remove(budget_transaction_mapping: BudgetTransactionMapping, user: 
     query.execute(get_executor_txn(txn)).await?;
 
     Ok(())
-}
-
-pub async fn find_editable_mapping_by_id(budget_transaction_mapping_id: i64, user: &User, conn: &mut Connection<DB>) -> Result<BudgetTransactionMapping, Error> {
-
-    let sql = "\
-            SELECT btm.* FROM budget_transaction_mapping btm \
-                JOIN budget b ON b.id = btm.budget_id \
-                JOIN bank_transaction bt ON bt.id = btm.bank_transaction_id \
-                JOIN bank_account ba ON ba.id = bt.bank_account_id \
-                JOIN bank_account_user bau ON bau.bank_account_id = ba.id \
-            WHERE btm.id = ? \
-                AND b.user_id = ? \
-                AND bau.user_id = ? \
-                AND bau.role IN (?, ?) \
-        ";
-
-    let query = sqlx::query_as::<_, BudgetTransactionMapping>(sql)
-        .bind(budget_transaction_mapping_id)
-        .bind(user.id)
-        .bind(user.id)
-        .bind(BankAccountUserRole::Owner)
-        .bind(BankAccountUserRole::Editor);
-
-    let mapping = query.fetch_one(get_executor_conn(conn)).await?;
-
-    Ok(mapping)
 }

@@ -1,9 +1,11 @@
+use std::fmt::Display;
 use rocket::http::Status;
 use rocket::{Request, response};
 use rocket::response::Responder;
 use crate::models::data::application_error::ApplicationError::{CsvParseError, IntParseError, JwtAuthenticationError, RepositoryError, ServiceError};
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum ApplicationError {
     RepositoryError(sqlx::Error),
     CsvParseError(csv::Error),
@@ -51,7 +53,7 @@ impl From<jsonwebtoken::errors::Error> for ApplicationError {
 
 impl<'r, 'o: 'r> Responder<'r, 'o> for ApplicationError {
     fn respond_to(self, req: &'r Request<'_>) -> response::Result<'o> {
-        println!("Handling ApplicationError: {:?}", self);
+        println!("Got ApplicationError: {:?}", self);
         match self {
             ApplicationError::AuthenticationError(_) => Status::Unauthorized.respond_to(req),
             _ => Status::InternalServerError.respond_to(req),
