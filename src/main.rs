@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
-use rocket::{Build, fairing, Rocket};
+use rocket::{Build, fairing, Rocket, Config};
 use rocket::fairing::AdHoc;
 use rocket::http::Method;
 use rocket_db_pools::Database;
@@ -21,11 +21,11 @@ mod tests;
 #[launch]
 fn rocket() -> Rocket<Build> {
 
-    // let config = Config::figment();
-    // let allowed_origin = config.find_value("allowed_origin").unwrap();
+    let config = Config::figment();
+    let allowed_origin = config.find_value("allowed_origin").unwrap();
 
     let cors = CorsOptions::default()
-        .allowed_origins(AllowedOrigins::some_regex(&[r"(192\.168\..*)", r"(localhost.*)", r"(127\.0\.0\.1.*)"]))
+        .allowed_origins(AllowedOrigins::some_exact(&[allowed_origin.as_str().unwrap()]))
         .allowed_methods(
             vec![Method::Get, Method::Post]
                 .into_iter()

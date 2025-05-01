@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use rocket::http::Status;
 use rocket::{Request, response};
 use rocket::response::Responder;
