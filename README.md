@@ -2,14 +2,8 @@
 Custom web-based budgeting manager written in Rust
 
 # Deploy
-Run `cargo build --release` in repository directory
+Run `cargo build --release --target aarch64-unknown-linux-gnu` in repository directory
 
-Move `target/release/anti-bankrupt-machine` file to `server:~/budgetmanager`
-
-Run `zip -r webapp.zip static/ templates/` and transfer to `server:~/budgetmanager`
-
-Delete `server:~/budgetmanager/static/`, `server:~/budgetmanager/templates/`
-
-Unzip `webapp.zip` into `server:~/budgetmanager` and delete zip
+Move `target/aarch64-unknown-linux-gnu/release/anti-bankrupt-machine` file to `server:~/budgetmanager/backend/bin`
 
 Use scripts to restart server
