@@ -49,6 +49,7 @@ fn rocket() -> Rocket<Build> {
             controllers::api::transaction_api_controller::assign_budget_transaction_mappings,
             controllers::api::bank_account_api_controller::get_editable_bank_accounts,
             controllers::api::bank_record_api_controller::upload_post,
+            controllers::api::spending_api_controller::get_month_spending_breakdown,
         ])
         .attach(AdHoc::config::<AppConfig>())
         .attach(cors.to_cors().unwrap())

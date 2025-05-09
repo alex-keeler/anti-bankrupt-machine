@@ -5,8 +5,10 @@ use crate::models::bank_account_users::BankAccountUserRole;
 use crate::models::bank_transactions::BankTransaction;
 use crate::models::budget::Budget;
 use crate::models::budget_transaction_mapping::{BudgetTransactionMapping, TransactionBehavior};
+use crate::models::data::application_error::ApplicationError;
 use crate::models::DB;
 use crate::models::query::budget_transaction_mapping_details::BudgetTransactionMappingDetails;
+use crate::models::query::spending_by_budget::SpendingByBudget;
 use crate::models::users::User;
 use crate::repositories::repository_util::{get_executor_conn, get_executor_txn};
 
@@ -67,6 +69,48 @@ pub async fn get_details_by_transaction_id(bank_transaction_id: i64, user: &User
 
     let details = query.fetch_all(get_executor_conn(conn)).await?;
     Ok(details)
+}
+
+pub async fn get_spending_by_budget_for_time_period(begin_date: Option<&NaiveDate>, end_date: Option<&NaiveDate>, user: &User, conn: &mut Connection<DB>) -> Result<Vec<SpendingByBudget>, ApplicationError> {
+
+    let mut sql = String::from("\
+            SELECT b.title AS budget_title, b.classification AS budget_classification, \
+                    CAST(SUM(-bt.amount) AS INT) AS total_amount \
+            FROM bank_transaction bt \
+                JOIN bank_account ba ON ba.id = bt.bank_account_id \
+                JOIN bank_account_user bau ON bau.bank_account_id = ba.id \
+                JOIN users u ON bau.user_id = u.id \
+                LEFT JOIN budget_transaction_mapping btm ON btm.bank_transaction_id = bt.id \
+                LEFT JOIN budget b ON b.id = btm.budget_id \
+            WHERE u.id = ? \
+                AND ((btm.id IS NULL AND bt.amount < 0) OR btm.behavior in (?, ?)) \
+         ");
+
+    if begin_date.is_some() {
+       sql = sql + " AND bt.date >= ? ";
+    }
+
+    if end_date.is_some() {
+        sql = sql + " AND bt.date < ? ";
+    }
+
+    sql = sql + " GROUP BY b.id ";
+
+    let mut query = sqlx::query_as::<_, SpendingByBudget>(sql.as_str())
+        .bind(user.id)
+        .bind(TransactionBehavior::Spending)
+        .bind(TransactionBehavior::Reimbursement);
+
+    if let Some(begin_date) = begin_date {
+        query = query.bind(begin_date);
+    }
+
+    if let Some(end_date) = end_date {
+        query = query.bind(end_date);
+    }
+
+    let spending_by_budget = query.fetch_all(get_executor_conn(conn)).await?;
+    Ok(spending_by_budget)
 }
 
 pub async fn find_all_by_transaction(transaction: &BankTransaction, conn: &mut Connection<DB>) -> Result<Vec<BudgetTransactionMapping>, Error> {

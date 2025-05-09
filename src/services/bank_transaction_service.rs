@@ -11,15 +11,75 @@ use crate::models::bank_accounts::BankAccount;
 use crate::models::bank_transactions::BankTransaction;
 use crate::models::budget_transaction_mapping::BudgetTransactionMapping;
 use crate::models::data::application_error::ApplicationError::ServiceError;
+use crate::models::data::budget_classification_spending_report::BudgetClassificationSpendingReport;
+use crate::models::data::budget_spending_report::BudgetSpendingReport;
 use crate::models::query::full_transaction_details::FullTransactionDetails;
 use crate::models::DB;
 use crate::models::query::budget_transaction_mapping_details::BudgetTransactionMappingDetails;
+use crate::models::data::spending_report::SpendingReport;
 use crate::models::query::transaction_details::TransactionDetails;
 use crate::models::users::User;
 use crate::repositories::{bank_transaction_repository, budget_repository, budget_transaction_mapping_repository};
 use crate::services::converters::BankRecordConverterFactory;
 use crate::services::factories::Factory;
 use crate::util::{bank_record_util, date_util};
+
+pub async fn build_month_spending_report(year: i32, month: u32, user: &User, conn: &mut Connection<DB>) -> Result<SpendingReport, ApplicationError> {
+
+    let (begin_date, end_date) = date_util::get_date_range(year, month)?;
+
+    let spending_by_budget = budget_transaction_mapping_repository::get_spending_by_budget_for_time_period(Some(&begin_date), Some(&end_date), user, conn).await?;
+
+    let mut classification_map = HashMap::new();
+    let mut total_spent_unbudgeted = 0;
+
+    for budget_spend in spending_by_budget {
+        if let (Some(title), Some(classification)) = (budget_spend.budget_title, budget_spend.budget_classification) {
+
+            let budget_spending_report = BudgetSpendingReport {
+                title,
+                total_spent: budget_spend.total_amount,
+            };
+
+            classification_map.entry(classification).or_insert(vec![]).push(budget_spending_report);
+        } else {
+            total_spent_unbudgeted += budget_spend.total_amount;
+        }
+    }
+
+    let mut classification_spending_reports = vec![];
+
+    for (classification, mut budget_spending_reports) in classification_map.drain() {
+
+        budget_spending_reports.sort_by(|a, b| b.total_spent.cmp(&a.total_spent));
+
+        let total_spent = budget_spending_reports.iter()
+            .map(|r| r.total_spent)
+            .sum();
+
+        let classification_spending_report = BudgetClassificationSpendingReport {
+            classification,
+            total_spent,
+            budgets: budget_spending_reports,
+        };
+
+        classification_spending_reports.push(classification_spending_report);
+    };
+
+    classification_spending_reports.sort_by(|a, b| b.total_spent.cmp(&a.total_spent));
+
+    let total_spent = classification_spending_reports.iter()
+        .map(|r| r.total_spent)
+        .sum::<i32>() + total_spent_unbudgeted;
+
+    let spending_report = SpendingReport {
+        total_spent,
+        total_spent_unbudgeted,
+        budget_classifications: classification_spending_reports,
+    };
+
+    Ok(spending_report)
+}
 
 pub async fn import_bank_record_file(path: &Path, filename: &str, content_type: &ContentType, _user: User, bank_account: BankAccount, conn: &mut Connection<DB>) -> Result<(), ApplicationError> {
 
