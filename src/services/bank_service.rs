@@ -11,7 +11,7 @@ pub async fn find_editable_accounts_for_user(user: User, conn: &mut Connection<D
     Ok(accounts)
 }
 
-pub async fn find_account_by_id(id: i64, conn: &mut Connection<DB>) -> Result<BankAccount, ApplicationError> {
-    let account = bank_account_repository::find_account_by_id(id, conn).await?;
+pub async fn find_account_by_id(id: i64, user: &User, restrict_to_roles: Option<Vec<BankAccountUserRole>>, conn: &mut Connection<DB>) -> Result<BankAccount, ApplicationError> {
+    let account = bank_account_repository::find_account_by_id(id, user, restrict_to_roles, conn).await?;
     Ok(account)
 }

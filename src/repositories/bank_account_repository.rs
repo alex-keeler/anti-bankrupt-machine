@@ -34,16 +34,30 @@ pub async fn find_accounts_for_user(user: User, restrict_to_roles: Option<Vec<Ba
     Ok(bank_accounts)
 }
 
-pub async fn find_account_by_id(id: i64, conn: &mut Connection<DB>) -> Result<BankAccount, Error> {
+pub async fn find_account_by_id(id: i64, user: &User, restrict_to_roles: Option<Vec<BankAccountUserRole>>, conn: &mut Connection<DB>) -> Result<BankAccount, Error> {
 
-    let sql = "\
+    let mut sql = String::from("\
             SELECT ba.* \
-            FROM bank_account ba \
+            FROM users u \
+                JOIN bank_account_user ba ON ba.id = u.id \
+                JOIN bank_account ba ON ba.id = ba.id \
             WHERE ba.id = ? \
-        ";
+                AND u.id = ? \
+        ");
 
-    let query = sqlx::query_as::<_, BankAccount>(sql)
-        .bind(id);
+    if let Some(roles) = &restrict_to_roles {
+        sql = sql + format!("AND bau.role IN ({})", vec!["?"; roles.len()].join(",")).as_str();
+    }
+
+    let mut query = sqlx::query_as::<_, BankAccount>(sql.as_str())
+        .bind(id)
+        .bind(user.id.unwrap());
+
+    if let Some(roles) = &restrict_to_roles {
+        for role in roles {
+            query = query.bind(role);
+        }
+    }
 
     let bank_account = query.fetch_one(get_executor_conn(conn)).await?;
 

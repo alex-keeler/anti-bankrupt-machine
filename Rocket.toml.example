@@ -1,0 +1,9 @@
+# for local mysql database
+[default.databases.budgetmanager]
+url = "mysql://<username>:<password>@localhost:3306/<database>?useSSL=false"
+
+# random 64 bit keys, generate using `openssl rand 64 | base64 | tr -d '\n'`
+[default]
+allowed_origin = "http://localhost:5173"
+secret_key = "<changeme>"
+user_jwt_secret = "<changeme>"

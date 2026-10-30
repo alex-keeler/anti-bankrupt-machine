@@ -50,8 +50,6 @@ impl BankRecordConverter<'_> for VenmoCsvConverter {
         let begin_date = transactions.get(0).unwrap().date;
         let end_date = transactions.get(transactions.len() - 1).unwrap().date;
 
-        println!("begin: {:?}, end: {:?}", begin_date, end_date);
-
         Ok(BankRecordReport {
             transactions,
             begin_date: Some(begin_date),

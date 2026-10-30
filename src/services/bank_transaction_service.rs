@@ -81,7 +81,7 @@ pub async fn build_month_spending_report(year: i32, month: u32, user: &User, con
     Ok(spending_report)
 }
 
-pub async fn import_bank_record_file(path: &Path, filename: &str, content_type: &ContentType, _user: User, bank_account: BankAccount, conn: &mut Connection<DB>) -> Result<(), ApplicationError> {
+pub async fn import_bank_record_file(path: &Path, filename: &str, content_type: &ContentType, _user: &User, bank_account: BankAccount, conn: &mut Connection<DB>) -> Result<(), ApplicationError> {
 
     let report = BankRecordConverterFactory::get_instance((&bank_account.bank, filename, content_type))
         .ok_or("no supporting handler found")?
@@ -231,9 +231,7 @@ pub async fn get_budget_transaction_mapping_details_by_transaction_id(
 pub async fn assign_budget_transaction_mappings(
     transaction_id: i64, mappings: Vec<BudgetTransactionMapping>, user: &User, conn: &mut Connection<DB>
 ) -> Result<(), ApplicationError> {
-
-    print!("mappings: {:?}", mappings);
-
+    
     let transaction = bank_transaction_repository::find_editable_transaction_by_id(transaction_id, &user, conn).await?;
 
     if !verify_all_mappings_belong_to_transaction(&transaction, &mappings) {
